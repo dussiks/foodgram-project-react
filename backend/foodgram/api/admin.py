@@ -26,3 +26,6 @@ class RecipeAdmin(admin.ModelAdmin):
     list_display = ('name',)
     list_filter = ('name', 'tag',)
     empty_value_display = '-пусто-'
+
+
+admin.site.register(Recipe)

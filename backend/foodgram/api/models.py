@@ -33,11 +33,15 @@ class Ingredient(models.Model):
 class Recipe(models.Model):
     # author = models.ForeignKey(FoodUser, on_delete=models.CASCADE, null=False)
     name = models.CharField('рецепт', max_length=40, blank=False)
-    image = models.ImageField('рисунок', upload_to='image/', null=False)
+    image = models.ImageField(
+        'рисунок', upload_to='api/', null=False, blank=False
+    )
     text = models.TextField('описание', blank=False)
-    cooking_time = models.PositiveSmallIntegerField('время готовки, мин', blank=False)
+    cooking_time = models.PositiveSmallIntegerField('время готовки, мин',
+                                                    blank=False)
     tag = models.ManyToManyField(Tag, related_name='tags', null=False)
-    ingredient = models.ManyToManyField(Ingredient, through='RecipeIngredient')
+    ingredient = models.ManyToManyField(Ingredient,
+                                        through='RecipeIngredient')
 
     def __str__(self):
         return self.name
@@ -49,5 +53,6 @@ class Recipe(models.Model):
 
 class RecipeIngredient(models.Model):
     recipe = models.ForeignKey(Recipe, on_delete=models.CASCADE, blank=False)
-    ingredient = models.ForeignKey(Ingredient, on_delete=models.CASCADE, blank=False)
+    ingredient = models.ForeignKey(Ingredient,
+                                   on_delete=models.CASCADE, blank=False)
     amount = models.PositiveSmallIntegerField(blank=False)
