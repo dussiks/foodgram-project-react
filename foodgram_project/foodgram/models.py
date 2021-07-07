@@ -1,6 +1,6 @@
 from django.db import models
 
-from users.models import FoodUser
+# from users.models import FoodUser
 
 
 class Tag(models.Model):
@@ -31,7 +31,7 @@ class Ingredient(models.Model):
 
 
 class Recipe(models.Model):
-    author = models.ForeignKey(FoodUser, on_delete=models.CASCADE, null=False)
+    # author = models.ForeignKey(FoodUser, on_delete=models.CASCADE, null=False)
     name = models.CharField('рецепт', max_length=40, blank=False)
     image = models.ImageField('рисунок', upload_to='image/', null=False)
     text = models.TextField('описание', blank=False)
