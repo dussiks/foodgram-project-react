@@ -1,6 +1,6 @@
 from django.db import models
 
-# from users.models import CustomUser
+from users.models import CustomUser
 
 
 class Tag(models.Model):
@@ -31,10 +31,10 @@ class Ingredient(models.Model):
 
 
 class Recipe(models.Model):
-    # author = models.ForeignKey(FoodUser, on_delete=models.CASCADE, null=False)
+    author = models.ForeignKey(CustomUser, on_delete=models.CASCADE)
     name = models.CharField('рецепт', max_length=40, blank=False)
     image = models.ImageField(
-        'рисунок', upload_to='api/', null=False, blank=False
+        'рисунок', upload_to='recipes_api/images/', null=False, blank=False
     )
     text = models.TextField('описание', blank=False)
     cooking_time = models.PositiveSmallIntegerField('время готовки, мин',

@@ -22,11 +22,10 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'recipes_api.apps.RecipesApiConfig',
-    'users.apps.UsersConfig',
+    'users',
     'rest_framework',
     'django_filters',
     'djoser',
-    'users',
 ]
 
 MIDDLEWARE = [
@@ -80,6 +79,8 @@ AUTH_PASSWORD_VALIDATORS = [
         'NAME': 'django.contrib.auth.password_validation.NumericPasswordValidator',
     },
 ]
+
+AUTH_USER_MODEL = 'users.CustomUser'
 
 LANGUAGE_CODE = 'en-us'
 
