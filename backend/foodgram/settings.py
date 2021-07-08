@@ -8,7 +8,7 @@ BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 env = environ.Env()
 environ.Env.read_env(env_file=os.path.join(BASE_DIR, '.env'))
 
-SECRET_KEY = env('DJANGO_SECRET_KEY', default='r2j!=u-1sh!^de)mj!shtktus&1vt-k889w5_t5r+nm+tkk#hz')
+SECRET_KEY = env('DJANGO_SECRET_KEY', default='jvrmme)4qswfa)m45=@a=l9k(vzxzyxzp7-8l3wzkh()13t1og')
 
 DEBUG = env('DEBUG', default=False)
 
@@ -21,10 +21,12 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-    'api.apps.ApiConfig',
-    'users.apps.Config',
+    'recipes_api.apps.RecipesApiConfig',
+    'users.apps.UsersConfig',
     'rest_framework',
-    'sorl.thumbnail',
+    'django_filters',
+    'djoser',
+    'users',
 ]
 
 MIDDLEWARE = [
@@ -95,7 +97,7 @@ STATIC_ROOT = os.path.join(BASE_DIR, 'static')
 MEDIA_URL = '/media/'
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 
-EST_FRAMEWORK = {
+REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES': [
         'rest_framework_simplejwt.authentication.JWTAuthentication',
     ],

@@ -1,6 +1,6 @@
 from django.db import models
 
-# from users.models import FoodUser
+# from users.models import CustomUser
 
 
 class Tag(models.Model):
@@ -39,7 +39,7 @@ class Recipe(models.Model):
     text = models.TextField('описание', blank=False)
     cooking_time = models.PositiveSmallIntegerField('время готовки, мин',
                                                     blank=False)
-    tag = models.ManyToManyField(Tag, related_name='tags', null=False)
+    tag = models.ManyToManyField(Tag, related_name='tags')
     ingredient = models.ManyToManyField(Ingredient,
                                         through='RecipeIngredient')
 
@@ -48,7 +48,7 @@ class Recipe(models.Model):
 
     class Meta:
         verbose_name_plural = 'рецепты'
-        ordering = ('name',)
+        ordering = ('-id',)
 
 
 class RecipeIngredient(models.Model):
