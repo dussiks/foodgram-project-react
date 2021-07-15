@@ -1,6 +1,7 @@
 from rest_framework import mixins, permissions, viewsets
+from rest_framework.decorators import api_view, permission_classes
 from rest_framework.generics import get_object_or_404
-from rest_framework.viewsets import ModelViewSet
+from rest_framework.viewsets import ModelViewSet, ReadOnlyModelViewSet
 
 from .models import Follow, Ingredient, Recipe, RecipeIngredient, Tag
 from .serializers import (FollowSerializer, IngredientSerializer,
@@ -16,10 +17,10 @@ class CreateListViewSet(mixins.ListModelMixin,
 class FollowViewSet(CreateListViewSet):
     serializer_class = FollowSerializer
     permission_classes = (permissions.IsAuthenticated, )
-    search_fields = ['user__username', 'following__username']
 
     def get_queryset(self):
         user = self.request.user
+
         if user.is_staff:
             return Follow.objects.all()
         return user.following.all()

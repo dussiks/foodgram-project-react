@@ -34,7 +34,7 @@ class RecipeSerializer(serializers.ModelSerializer):
 
 
 class FollowSerializer(serializers.ModelSerializer):
-    user = serializers.SlugRelatedField(
+    follower = serializers.SlugRelatedField(
         slug_field='username',
         read_only=True,
         default=serializers.CurrentUserDefault(),
@@ -46,11 +46,7 @@ class FollowSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Follow
-        fields = ('user', 'following')
-        validators = [UniqueTogetherValidator(
-            queryset=Follow.objects.all(),
-            fields=['user', 'following']
-        )]
+        fields = ('follower', 'following')
 
     def validate(self, data):
         request = self.context['request']
@@ -59,3 +55,11 @@ class FollowSerializer(serializers.ModelSerializer):
                 'User can not follow himself.'
             )
         return data
+
+
+class CustomUserSerializer(serializers.ModelSerializer):
+    recipes = RecipeSerializer(many=True, read_only=True)
+
+    class Meta:
+        model = CustomUser
+        fields = ('first_name', 'recipes')

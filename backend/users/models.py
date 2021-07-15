@@ -18,6 +18,11 @@ class CustomUser(AbstractUser):
 
     objects = UserAccountManager()
 
+    class Meta:
+        verbose_name_plural = 'пользователи'
+        verbose_name = 'пользователь'
+        ordering = ('username', )
+
     @property
     def is_admin(self):
         return self.is_superuser
