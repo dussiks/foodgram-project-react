@@ -10,9 +10,13 @@ environ.Env.read_env(env_file=os.path.join(BASE_DIR, '.env'))
 
 SECRET_KEY = env('DJANGO_SECRET_KEY', default='jvrmme)4qswfa)m45=@a=l9k(vzxzyxzp7-8l3wzkh()13t1og')
 
-DEBUG = env('DEBUG', default=False)
+DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = [
+    'localhost',
+    '127.0.0.1',
+    'web',
+]
 
 INSTALLED_APPS = [
     'recipes_api.apps.RecipesApiConfig',
