@@ -3,8 +3,8 @@ from rest_framework.decorators import api_view, permission_classes
 from rest_framework.generics import get_object_or_404
 from rest_framework.viewsets import ModelViewSet, ReadOnlyModelViewSet
 
-from .models import Follow, Ingredient, Recipe, RecipeIngredient, Tag
-from .serializers import (FollowSerializer, IngredientSerializer,
+from .models import Ingredient, Recipe, RecipeIngredient, Tag
+from .serializers import (IngredientSerializer,
                           RecipeSerializer, TagSerializer)
 
 
@@ -13,20 +13,6 @@ class CreateListViewSet(mixins.ListModelMixin,
                         viewsets.GenericViewSet):
     pass
 
-
-class FollowViewSet(CreateListViewSet):
-    serializer_class = FollowSerializer
-    permission_classes = (permissions.IsAuthenticated, )
-
-    def get_queryset(self):
-        user = self.request.user
-
-        if user.is_staff:
-            return Follow.objects.all()
-        return user.following.all()
-
-    def perform_create(self, serializer):
-        serializer.save(user=self.request.user)
 
 
 class TagViewSet(ModelViewSet):

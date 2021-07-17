@@ -1,7 +1,7 @@
 from rest_framework import serializers
 from rest_framework.validators import UniqueTogetherValidator
 
-from .models import Follow, Ingredient, Recipe, RecipeIngredient, Tag
+from .models import Ingredient, Recipe, RecipeIngredient, Tag
 from users.models import CustomUser
 
 
@@ -33,29 +33,7 @@ class RecipeSerializer(serializers.ModelSerializer):
         fields = ('id', 'ingredients', 'name', 'image', 'text', 'cooking_time')
 
 
-class FollowSerializer(serializers.ModelSerializer):
-    follower = serializers.SlugRelatedField(
-        slug_field='username',
-        read_only=True,
-        default=serializers.CurrentUserDefault(),
-    )
-    following = serializers.SlugRelatedField(
-        slug_field='username',
-        queryset=CustomUser.objects.all(),
-    )
-
-    class Meta:
-        model = Follow
-        fields = ('follower', 'following')
-
-    def validate(self, data):
-        request = self.context['request']
-        if request.user == data.get('following'):
-            raise serializers.ValidationError(
-                'User can not follow himself.'
-            )
-        return data
-
+#
 
 class CustomUserSerializer(serializers.ModelSerializer):
     recipes = RecipeSerializer(many=True, read_only=True)
