@@ -5,11 +5,10 @@ from users.models import CustomUser
 
 
 class Tag(models.Model):
-    name = models.CharField('тег', max_length=50, unique=True, blank=False)
-    slug = models.SlugField(max_length=20, unique=True)
+    name = models.CharField('тег', max_length=200, unique=True, blank=False)
+    slug = models.SlugField(max_length=200, unique=True)
     color = models.CharField(
         'цвет',
-        unique=True,
         max_length=7,
         default='#49B64E',
         validators=[
@@ -27,8 +26,8 @@ class Tag(models.Model):
 
 
 class Ingredient(models.Model):
-    name = models.CharField('ингредиент', max_length=40, blank=False)
-    measurement_unit = models.CharField('ЕИ', max_length=20, blank=False)
+    name = models.CharField('ингредиент', max_length=200, blank=False)
+    measurement_unit = models.CharField('ЕИ', max_length=200, blank=False)
 
     class Meta:
         verbose_name_plural = 'ингредиенты'

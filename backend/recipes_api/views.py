@@ -20,6 +20,7 @@ class IngredientViewSet(ReadOnlyModelViewSet):
     queryset = Ingredient.objects.all()
     permission_classes = (permissions.AllowAny, )
     pagination_class = None
+    search_fields = ['name', ]
 
 
 class RecipeListViewSet(mixins.ListModelMixin, viewsets.GenericViewSet):

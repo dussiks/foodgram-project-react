@@ -123,7 +123,7 @@ REST_FRAMEWORK = {
         'anon': '100/day',
     },
     'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.LimitOffsetPagination',
-    'PAGE_SIZE': 6
+    'PAGE_SIZE': 2
 }
 
 DJOSER = {

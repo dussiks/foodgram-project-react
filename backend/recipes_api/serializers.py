@@ -6,6 +6,7 @@ from rest_framework.validators import UniqueTogetherValidator
 
 from .models import Ingredient, Recipe, RecipeIngredient, Tag
 from users.models import CustomUser
+from users.serializers import CustomUserSerializer
 
 
 class Base64ImageField(serializers.ImageField):
@@ -39,16 +40,12 @@ class RecipeIngredientSerializer(serializers.ModelSerializer):
 
 
 class RecipeListSerializer(serializers.ModelSerializer):
-    author = serializers.SlugRelatedField(
-        read_only=True,
-        slug_field='username',
-        many=False
-    )
-    tags = TagSerializer(many=True, read_only=True)
-    ingredients = IngredientSerializer(many=True, read_only=True)
+    author = CustomUserSerializer(many=False, required=True)
+    tags = TagSerializer(many=True, required=True)
+    ingredients = IngredientSerializer(many=True, required=False)
     #image = Base64ImageField()
 
     class Meta:
         model = Recipe
-        fields = ('id', 'author', 'ingredients', 'tags',
+        fields = ('id', 'tags', 'author', 'ingredients',
                   'name', 'image', 'text', 'cooking_time')

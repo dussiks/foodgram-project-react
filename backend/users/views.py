@@ -17,18 +17,22 @@ class CustomUserModelViewSet(DjoserUserViewSet):
 
     @action(detail=True, methods=['get', 'delete'])
     def subscribe(self, request, **kwargs):
-        """Subscribe  to recipe's author."""
+        """Subscribe or unsubscribe to recipe's author."""
         follower = request.user
-        recipe_author = get_object_or_404(CustomUser, pk=self.kwargs.get('id'))
+        recipe_author = get_object_or_404(CustomUser,
+                                          pk=self.kwargs.get('id'))
         if follower == recipe_author:
-            return Response()
+            error_text = 'You can not subscribe yourself.'
+            return Response(error_text, status=status.HTTP_400_BAD_REQUEST)
         if request.method == 'DELETE':
             try:
                 subscription = Follow.objects.get(
                     follower=follower, following=recipe_author
                 )
             except ObjectDoesNotExist:
-                return Response(status=status.HTTP_400_BAD_REQUEST)
+                error_text = 'No subscription with choosen user.'
+                return Response(error_text,
+                                status=status.HTTP_400_BAD_REQUEST)
             subscription.delete()
             return Response(status=status.HTTP_204_NO_CONTENT)
         subscription = Follow.objects.get_or_create(

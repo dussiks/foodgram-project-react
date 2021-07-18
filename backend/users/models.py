@@ -5,7 +5,7 @@ from .managers import UserAccountManager
 
 
 class CustomUser(AbstractUser):
-    email = models.EmailField('email', unique=True, max_length=150)
+    email = models.EmailField('email', unique=True, max_length=254)
     username = models.CharField(
         'логин', max_length=150, blank=False, unique=True
     )
