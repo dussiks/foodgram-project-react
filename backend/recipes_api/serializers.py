@@ -44,7 +44,8 @@ class RecipeListSerializer(serializers.ModelSerializer):
         slug_field='username',
         many=False
     )
-
+    tags = TagSerializer(many=True, read_only=True)
+    ingredients = IngredientSerializer(many=True, read_only=True)
     #image = Base64ImageField()
 
     class Meta:
