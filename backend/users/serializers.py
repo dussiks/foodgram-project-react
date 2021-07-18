@@ -9,8 +9,14 @@ from rest_framework.validators import UniqueTogetherValidator
 from .models import CustomUser, Follow
 
 
+class CustomUserSerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = CustomUser
+        fields = ('id', 'username', 'email', 'first_name', 'last_name')
+
+
 class CustomUserCreateSerializer(serializers.ModelSerializer):
-    password = serializers.CharField(max_length=150)
 
     class Meta:
         model = CustomUser
@@ -47,10 +53,10 @@ class FollowSerializer(serializers.ModelSerializer):
             fields=['follower', 'following']
         )]
 
-    def validate(self, data):
-        request = self.context['request']
-        if request.user == data.get('following'):
-            raise serializers.ValidationError(
-                'User can not subscribe on himself.'
-            )
-        return data
+    #def validate(self, data):
+    #    request = self.context['request']
+    #    if request.user == data.get('following'):
+    #        raise serializers.ValidationError(
+    #            'User can not subscribe on himself.'
+    #        )
+    #    return data
