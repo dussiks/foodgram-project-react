@@ -5,12 +5,7 @@ from rest_framework.viewsets import ModelViewSet, ReadOnlyModelViewSet
 
 from .models import Ingredient, Recipe, RecipeIngredient, Tag
 from .serializers import (IngredientSerializer,
-                          RecipeSerializer, TagSerializer)
-
-
-class CreateListViewSet(mixins.ListModelMixin,
-                        viewsets.GenericViewSet):
-    pass
+                          RecipeListSerializer, TagSerializer)
 
 
 class TagViewSet(ReadOnlyModelViewSet):
@@ -27,6 +22,7 @@ class IngredientViewSet(ReadOnlyModelViewSet):
     pagination_class = None
 
 
-class RecipeViewSet(ModelViewSet):
-    serializer_class = RecipeSerializer
+class RecipeListViewSet(mixins.ListModelMixin, viewsets.GenericViewSet):
+    serializer_class = RecipeListSerializer
     queryset = Recipe.objects.all()
+    permission_classes = (permissions.AllowAny, )

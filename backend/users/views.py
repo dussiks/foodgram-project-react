@@ -8,24 +8,34 @@ from rest_framework.response import Response
 from rest_framework.viewsets import ModelViewSet
 
 from .models import CustomUser, Follow
-from .serializers import CustomUserSerializer, CustomUserCreateSerializer, FollowSerializer
+from .serializers import CustomUserSerializer, CustomUserCreateSerializer
 
 
 class CustomUserModelViewSet(DjoserUserViewSet):
     serializer_class = CustomUserSerializer
     permission_classes = (permissions.IsAuthenticated, )
 
-    @action(detail=True, methods=['post', 'delete'])
+    @action(detail=True, methods=['get', 'delete'])
     def subscribe(self, request, **kwargs):
         """Subscribe  to recipe's author."""
         follower = request.user
         recipe_author = get_object_or_404(CustomUser, pk=self.kwargs.get('id'))
-        if request.method == 'POST':
-            subscription = Follow.objects.get_or_create(
-                follower=follower, following=recipe_author
-            )
-            serializer = CustomUserSerializer(follower)
-            return Response(serializer.data, status=status.HTTP_201_CREATED)
+        if follower == recipe_author:
+            return Response()
+        if request.method == 'DELETE':
+            try:
+                subscription = Follow.objects.get(
+                    follower=follower, following=recipe_author
+                )
+            except ObjectDoesNotExist:
+                return Response(status=status.HTTP_400_BAD_REQUEST)
+            subscription.delete()
+            return Response(status=status.HTTP_204_NO_CONTENT)
+        subscription = Follow.objects.get_or_create(
+            follower=follower, following=recipe_author
+        )
+        serializer = CustomUserSerializer(follower)
+        return Response(serializer.data, status=status.HTTP_201_CREATED)
 
     @action(detail=False)
     def subscriptions(self, request):
@@ -44,15 +54,3 @@ class CustomUserModelViewSet(DjoserUserViewSet):
         serializer.is_valid(raise_exception=True)
         serializer.save()
         return Response(serializer.data, status=status.HTTP_201_CREATED)
-
-
-class FollowViewSet(ModelViewSet):
-    serializer_class = FollowSerializer
-    permission_classes = (permissions.IsAuthenticated, )
-
-    def get_queryset(self):
-        user = self.request.user
-        return user.followers.all()
-
-    def perform_create(self, serializer):
-        serializer.save(follower=self.request.user)

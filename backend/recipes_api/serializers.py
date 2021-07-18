@@ -1,8 +1,20 @@
+import base64
+
+from django.core.files.base import ContentFile
 from rest_framework import serializers
 from rest_framework.validators import UniqueTogetherValidator
 
 from .models import Ingredient, Recipe, RecipeIngredient, Tag
 from users.models import CustomUser
+
+
+class Base64ImageField(serializers.ImageField):
+    def from_native(self, data):
+        if isinstance(data, str) and data.startswith('data:image'):
+            format, imgstr = data.split(';base64,')
+            ext = format.split('/')[-1]
+            data = ContentFile(base64.b64decode(imgstr), name='temp.' + ext)
+        return super(Base64ImageField, self).from_native(data)
 
 
 class TagSerializer(serializers.ModelSerializer):
@@ -26,18 +38,16 @@ class RecipeIngredientSerializer(serializers.ModelSerializer):
         fields = ('recipe', 'ingredient', 'amount')
 
 
-class RecipeSerializer(serializers.ModelSerializer):
+class RecipeListSerializer(serializers.ModelSerializer):
+    author = serializers.SlugRelatedField(
+        read_only=True,
+        slug_field='username',
+        many=False
+    )
+
+    #image = Base64ImageField()
 
     class Meta:
         model = Recipe
-        fields = ('id', 'ingredients', 'name', 'image', 'text', 'cooking_time')
-
-
-#
-
-class CustomUserSerializer(serializers.ModelSerializer):
-    recipes = RecipeSerializer(many=True, read_only=True)
-
-    class Meta:
-        model = CustomUser
-        fields = ('first_name', 'recipes')
+        fields = ('id', 'author', 'ingredients', 'tags',
+                  'name', 'image', 'text', 'cooking_time')
