@@ -7,6 +7,6 @@ v1_router = DefaultRouter()
 v1_router.register('users', CustomUserModelViewSet)
 
 urlpatterns = [
-    #path('', include('djoser.urls')),
+    path('', include(v1_router.urls)),
     path('auth/', include('djoser.urls.authtoken')),
 ]

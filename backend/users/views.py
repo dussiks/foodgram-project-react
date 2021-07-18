@@ -1,19 +1,19 @@
-from djoser.views import UserViewSet
+import djoser.views
+from djoser.views import UserViewSet as DjoserUserViewSet
 from rest_framework import permissions, status
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.generics import get_object_or_404
 from rest_framework.response import Response
-from rest_framework.viewsets import ModelViewSet, ReadOnlyModelViewSet
+from rest_framework.viewsets import ModelViewSet
 
 from .models import CustomUser, Follow
 from .serializers import CustomUserCreateSerializer, FollowSerializer
 
 
-class CustomUserModelViewSet(UserViewSet):
-    queryset = CustomUser.objects.all()
+class CustomUserModelViewSet(DjoserUserViewSet):
 
-    def create(self):
-        serializer = CustomUserCreateSerializer(data=self.request.data)
+    def create(self, request, *args, **kwargs):
+        serializer = CustomUserCreateSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         serializer.save()
         return Response(serializer.data, status=status.HTTP_201_CREATED)

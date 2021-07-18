@@ -5,12 +5,12 @@ from .managers import UserAccountManager
 
 
 class CustomUser(AbstractUser):
-    email = models.EmailField('email', unique=True)
+    email = models.EmailField('email', unique=True, max_length=150)
     username = models.CharField(
-        'логин', max_length=30, blank=True, unique=True
+        'логин', max_length=150, blank=False, unique=True
     )
-    first_name = models.CharField('имя', max_length=50, blank=True)
-    last_name = models.CharField('фамилия', max_length=50, blank=True)
+    first_name = models.CharField('имя', max_length=150, blank=False)
+    last_name = models.CharField('фамилия', max_length=150, blank=False)
     is_staff = models.BooleanField(default=False)
     is_active = models.BooleanField(default=True)
     USERNAME_FIELD = 'email'

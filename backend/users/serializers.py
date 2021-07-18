@@ -1,5 +1,6 @@
 from django.contrib.auth.password_validation import validate_password
 from django.core import exceptions as django_exceptions
+from djoser.conf import settings
 from djoser.serializers import UserCreateSerializer
 from rest_framework import serializers
 from rest_framework.settings import api_settings
@@ -8,12 +9,23 @@ from rest_framework.validators import UniqueTogetherValidator
 from .models import CustomUser, Follow
 
 
-class CustomUserCreateSerializer(UserCreateSerializer):
+class CustomUserCreateSerializer(serializers.ModelSerializer):
+    password = serializers.CharField(max_length=150)
 
-    class Meta(UserCreateSerializer.Meta):
+    class Meta:
         model = CustomUser
-        fields = ('username', 'first_name', 'last_name', 'email', 'password')
+        fields = ('id', 'username', 'first_name', 'last_name', 'email', 'password')
 
+    def create(self, validated_data):
+        user = CustomUser(
+            email=validated_data['email'],
+            username=validated_data['username'],
+            first_name=validated_data['first_name'],
+            last_name=validated_data['last_name'],
+        )
+        user.set_password(validated_data['password'])
+        user.save()
+        return user
 
 
 class FollowSerializer(serializers.ModelSerializer):

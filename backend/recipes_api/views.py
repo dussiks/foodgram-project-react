@@ -9,20 +9,22 @@ from .serializers import (IngredientSerializer,
 
 
 class CreateListViewSet(mixins.ListModelMixin,
-                        mixins.CreateModelMixin,
                         viewsets.GenericViewSet):
     pass
 
 
-
-class TagViewSet(ModelViewSet):
+class TagViewSet(ReadOnlyModelViewSet):
     serializer_class = TagSerializer
     queryset = Tag.objects.all()
+    permission_classes = (permissions.AllowAny,)
+    pagination_class = None
 
 
-class IngredientViewSet(ModelViewSet):
+class IngredientViewSet(ReadOnlyModelViewSet):
     serializer_class = IngredientSerializer
     queryset = Ingredient.objects.all()
+    permission_classes = (permissions.AllowAny, )
+    pagination_class = None
 
 
 class RecipeViewSet(ModelViewSet):
