@@ -6,14 +6,22 @@ from rest_framework import serializers
 from rest_framework.settings import api_settings
 from rest_framework.validators import UniqueTogetherValidator
 
-from .models import CustomUser
+from .models import CustomUser, Follow
 
 
 class CustomUserSerializer(serializers.ModelSerializer):
+    is_subscribed = serializers.SerializerMethodField()
 
     class Meta:
         model = CustomUser
-        fields = ('id', 'username', 'email', 'first_name', 'last_name')
+        fields = ('id', 'username', 'email',
+                  'first_name', 'last_name', 'is_subscribed')
+
+    def get_is_subscribed(self, user):
+        current_user = self.context['request'].user
+        return Follow.objects.filter(
+            follower=current_user, following=user
+        ).exists()
 
 
 class CustomUserCreateSerializer(serializers.ModelSerializer):

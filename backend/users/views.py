@@ -1,5 +1,4 @@
 from django.core.exceptions import ObjectDoesNotExist
-import djoser.views
 from djoser.views import UserViewSet as DjoserUserViewSet
 from rest_framework import permissions, status
 from rest_framework.decorators import action, api_view, permission_classes
@@ -30,15 +29,16 @@ class CustomUserModelViewSet(DjoserUserViewSet):
                     follower=follower, following=recipe_author
                 )
             except ObjectDoesNotExist:
-                error_text = 'No subscription with choosen user.'
+                error_text = 'No subscription on given user found.'
                 return Response(error_text,
                                 status=status.HTTP_400_BAD_REQUEST)
             subscription.delete()
             return Response(status=status.HTTP_204_NO_CONTENT)
-        subscription = Follow.objects.get_or_create(
+        Follow.objects.get_or_create(
             follower=follower, following=recipe_author
         )
-        serializer = CustomUserSerializer(follower)
+        serializer = CustomUserSerializer(recipe_author,
+                                          context={'request': request})
         return Response(serializer.data, status=status.HTTP_201_CREATED)
 
     @action(detail=False)
@@ -49,7 +49,8 @@ class CustomUserModelViewSet(DjoserUserViewSet):
             followings = []
             for subscription in subscriptions:
                 followings.append(subscription.following)
-            serializer = CustomUserSerializer(followings, many=True)
+            serializer = CustomUserSerializer(followings, many=True,
+                                              context={'request': request})
             return Response(serializer.data, status=status.HTTP_200_OK)
         return Response(status=status.HTTP_200_OK)
 
