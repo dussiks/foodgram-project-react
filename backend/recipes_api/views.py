@@ -27,4 +27,4 @@ class RecipeListViewSet(mixins.ListModelMixin, viewsets.GenericViewSet):
     serializer_class = RecipeListSerializer
     queryset = Recipe.objects.all()
     permission_classes = (permissions.AllowAny, )
-    filterset_fields = ['author', 'tags', ]
+    filterset_fields = ['author', ]

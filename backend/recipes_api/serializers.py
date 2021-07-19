@@ -1,5 +1,4 @@
-import base64
-
+from drf_extra_fields.fields import Base64ImageField
 from django.core.files.base import ContentFile
 from rest_framework import serializers
 from rest_framework.validators import UniqueTogetherValidator
@@ -7,15 +6,6 @@ from rest_framework.validators import UniqueTogetherValidator
 from .models import Ingredient, Recipe, RecipeIngredient, Tag
 from users.models import CustomUser
 from users.serializers import CustomUserSerializer
-
-
-class Base64ImageField(serializers.ImageField):
-    def from_native(self, data):
-        if isinstance(data, str) and data.startswith('data:image'):
-            format, imgstr = data.split(';base64,')
-            ext = format.split('/')[-1]
-            data = ContentFile(base64.b64decode(imgstr), name='temp.' + ext)
-        return super(Base64ImageField, self).from_native(data)
 
 
 class TagSerializer(serializers.ModelSerializer):
@@ -33,19 +23,24 @@ class IngredientSerializer(serializers.ModelSerializer):
 
 
 class RecipeIngredientSerializer(serializers.ModelSerializer):
+    id = serializers.IntegerField(source='ingredient.id')
+    name = serializers.CharField(source='ingredient.name')
+    measurement_unit = serializers.CharField(
+        source='ingredient.measurement_unit'
+    )
 
     class Meta:
         model = RecipeIngredient
-        fields = ('recipe', 'ingredient', 'amount')
+        fields = ('id', 'name', 'measurement_unit', 'amount',)
 
 
 class RecipeListSerializer(serializers.ModelSerializer):
     author = CustomUserSerializer(many=False, required=True)
-    tags = TagSerializer(many=True, required=True)
-    ingredients = IngredientSerializer(many=True, required=False)
-    #image = Base64ImageField()
+    tags = TagSerializer(many=True)
+    ingredients = RecipeIngredientSerializer(many=True, source='recipe_ingredients')
+    image = Base64ImageField()
 
     class Meta:
         model = Recipe
-        fields = ('id', 'tags', 'author', 'ingredients',
+        fields = ('id', 'author', 'tags', 'ingredients',
                   'name', 'image', 'text', 'cooking_time')
