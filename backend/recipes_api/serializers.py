@@ -39,7 +39,8 @@ class RecipeIngredientSerializer(serializers.ModelSerializer):
 class RecipeListSerializer(serializers.ModelSerializer):
     author = CustomUserSerializer(many=False, required=True)
     tags = TagSerializer(many=True)
-    ingredients = RecipeIngredientSerializer(many=True, source='recipe_ingredients')
+    ingredients = RecipeIngredientSerializer(many=True,
+                                             source='recipe_ingredients')
     image = Base64ImageField()
 
     class Meta:
@@ -49,14 +50,26 @@ class RecipeListSerializer(serializers.ModelSerializer):
 
 
 class CustomUserSubscribeSerializer(CustomUserSerializer):
-    #recipes = RecipeListSerializer(many=True, read_only=True)
+    recipes = serializers.SerializerMethodField()
     recipes_count = serializers.SerializerMethodField()
 
     class Meta:
         model = CustomUser
-        fields = CustomUserSerializer.Meta.fields + ('recipes_count', )
+        fields = CustomUserSerializer.Meta.fields + ('recipes',
+                                                     'recipes_count', )
 
     def get_recipes_count(self, user):
-        recipes_count = self.context['recipes_count']
+        recipes_count = self.context.get('recipes_count')
         return recipes_count
 
+    def get_recipes(self, user):
+        request = self.context.get('request')
+        recipes_limit = request.query_params.get('recipes_limit')
+        try:
+            recipes_limit = int(recipes_limit)
+        except (TypeError, ValueError):
+            recipes_limit = None
+        recipes = user.recipes.all()[:recipes_limit]
+        serializer = RecipeListSerializer(recipes, many=True,
+                                          context={'request': request})
+        return serializer.data

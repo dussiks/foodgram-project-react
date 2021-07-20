@@ -12,12 +12,12 @@ class CustomUserSerializer(serializers.ModelSerializer):
         fields = ('id', 'username', 'email',
                   'first_name', 'last_name', 'is_subscribed', )
 
-    def get_is_subscribed(self, user):
-        current_user = self.context['request'].user
+    def get_is_subscribed(self, author):
+        current_user = self.context.get('request').user
         if current_user.is_anonymous:
             return False
-        return (current_user == user) or Follow.objects.filter(
-            follower=current_user, following=user
+        return (current_user == author) or Follow.objects.filter(
+            follower=current_user, following=author
         ).exists()
 
 

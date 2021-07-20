@@ -2,19 +2,16 @@ from django.core.exceptions import ObjectDoesNotExist
 from rest_framework import mixins, permissions, viewsets, status
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.generics import get_object_or_404
-from rest_framework.pagination import LimitOffsetPagination
 from rest_framework.response import Response
 from rest_framework.settings import api_settings
 from rest_framework.views import APIView
 from rest_framework.viewsets import ReadOnlyModelViewSet
 
 from .models import CustomUser, Follow, Ingredient, Recipe, Tag
+from .paginator import CustomPagination
+from .permissions import IsOwner
 from .serializers import (CustomUserSerializer, CustomUserSubscribeSerializer, IngredientSerializer,
                           RecipeListSerializer, TagSerializer)
-from .permissions import IsOwner
-
-
-PAGE_SIZE = api_settings.PAGE_SIZE
 
 
 class TagViewSet(ReadOnlyModelViewSet):
@@ -29,7 +26,6 @@ class IngredientViewSet(ReadOnlyModelViewSet):
     queryset = Ingredient.objects.all()
     permission_classes = (permissions.AllowAny, )
     pagination_class = None
-    search_fields = ['name', ]
 
 
 class RecipeListViewSet(mixins.ListModelMixin, viewsets.GenericViewSet):
@@ -40,13 +36,12 @@ class RecipeListViewSet(mixins.ListModelMixin, viewsets.GenericViewSet):
 
 
 class SubscriptionViewSet(APIView):
-    permission_classes = (permissions.IsAuthenticated, IsOwner, )
+    permission_classes = (permissions.IsAuthenticated, )
 
     def get(self, request, **kwargs):
         user = request.user
         recipe_author = get_object_or_404(CustomUser,
                                           pk=self.kwargs.get('id'))
-
         if user == recipe_author:
             error_text = 'You can not subscribe yourself.'
             return Response(error_text, status=status.HTTP_400_BAD_REQUEST)
@@ -93,14 +88,15 @@ def user_subscriptions(request):
             recipe_authors.append(subscript.following)
 
         recipes_limit = request.query_params.get('recipes_limit')
-        if recipes_limit:
+        try:
             recipes_limit = int(recipes_limit)
+        except (TypeError, ValueError):
+            recipes_limit = None
+
         sub_recipes = Recipe.objects.filter(
             author__in=recipe_authors
         ).order_by('-id')[:recipes_limit]
-
-        paginator = LimitOffsetPagination()
-        paginator.page_size = PAGE_SIZE
+        paginator = CustomPagination()
         page = paginator.paginate_queryset(sub_recipes, request)
         if page is not None:
             serializer = RecipeListSerializer(page, many=True,
