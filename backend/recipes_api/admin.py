@@ -1,7 +1,6 @@
 from django.contrib import admin
 
-from .models import Ingredient, Recipe, Tag, RecipeIngredient
-from users.models import Follow, CustomUser
+from .models import Follow, Ingredient, Recipe, Tag, RecipeIngredient
 
 
 class RecipeIngredientInline(admin.TabularInline):
@@ -28,18 +27,11 @@ class RecipeAdmin(admin.ModelAdmin):
     inlines = [RecipeIngredientInline, ]
 
 
-class CustomUserAdmin(admin.ModelAdmin):
-    list_display = ('username', 'email',)
-    list_filter = ('username', 'email',)
-    empty_value_display = '-пусто-'
-
-
 class FollowAdmin(admin.ModelAdmin):
     list_display = ('follower', 'following',)
     empty_value_display = '-пусто-'
 
 
-admin.site.register(CustomUser, CustomUserAdmin)
 admin.site.register(Ingredient, IngredientAdmin)
 admin.site.register(Recipe, RecipeAdmin)
 admin.site.register(Tag, TagAdmin)

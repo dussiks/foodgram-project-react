@@ -1,12 +1,7 @@
-from django.contrib.auth.password_validation import validate_password
-from django.core import exceptions as django_exceptions
-from djoser.conf import settings
-from djoser.serializers import UserCreateSerializer
 from rest_framework import serializers
-from rest_framework.settings import api_settings
-from rest_framework.validators import UniqueTogetherValidator
 
-from .models import CustomUser, Follow
+from .models import CustomUser
+from recipes_api.models import Follow
 
 
 class CustomUserSerializer(serializers.ModelSerializer):
@@ -15,11 +10,13 @@ class CustomUserSerializer(serializers.ModelSerializer):
     class Meta:
         model = CustomUser
         fields = ('id', 'username', 'email',
-                  'first_name', 'last_name', 'is_subscribed')
+                  'first_name', 'last_name', 'is_subscribed', )
 
     def get_is_subscribed(self, user):
         current_user = self.context['request'].user
-        return Follow.objects.filter(
+        if current_user.is_anonymous:
+            return False
+        return (current_user == user) or Follow.objects.filter(
             follower=current_user, following=user
         ).exists()
 
