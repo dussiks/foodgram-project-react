@@ -3,7 +3,6 @@ from rest_framework import mixins, permissions, viewsets, status
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.generics import get_object_or_404
 from rest_framework.response import Response
-from rest_framework.settings import api_settings
 from rest_framework.views import APIView
 from rest_framework.viewsets import ReadOnlyModelViewSet
 
@@ -53,7 +52,7 @@ class SubscriptionViewSet(APIView):
             return Response(error_text, status=status.HTTP_400_BAD_REQUEST)
 
         Follow.objects.create(follower=user, following=recipe_author)
-        recipes_count = Recipe.objects.filter(author=recipe_author).count()
+        recipes_count = recipe_author.recipes.all().count()
         serializer = CustomUserSubscribeSerializer(
             recipe_author,
             context={'request': request, 'recipes_count': recipes_count}
@@ -65,9 +64,10 @@ class SubscriptionViewSet(APIView):
         recipe_author = get_object_or_404(CustomUser,
                                           pk=self.kwargs.get('id'))
         try:
-            subscription = Follow.objects.get(
-                follower=follower, following=recipe_author
-            )
+            subscription = follower.followers.get(following=recipe_author)
+            #subscription = Follow.objects.get(
+            #    follower=follower, following=recipe_author
+            #)
         except ObjectDoesNotExist:
             error_text = 'No subscription on given user found.'
             return Response(error_text,

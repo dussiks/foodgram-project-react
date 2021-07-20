@@ -1,10 +1,6 @@
 from drf_extra_fields.fields import Base64ImageField
 from rest_framework import serializers
-from rest_framework.validators import UniqueTogetherValidator
-from django.contrib.auth.password_validation import validate_password
-from django.core import exceptions as django_exceptions
-from djoser.conf import settings
-from djoser.serializers import UserCreateSerializer
+
 from .models import Ingredient, Recipe, RecipeIngredient, Tag
 from users.models import CustomUser
 from users.serializers import CustomUserSerializer
@@ -58,18 +54,18 @@ class CustomUserSubscribeSerializer(CustomUserSerializer):
         fields = CustomUserSerializer.Meta.fields + ('recipes',
                                                      'recipes_count', )
 
-    def get_recipes_count(self, user):
+    def get_recipes_count(self, author):
         recipes_count = self.context.get('recipes_count')
         return recipes_count
 
-    def get_recipes(self, user):
+    def get_recipes(self, author):
         request = self.context.get('request')
         recipes_limit = request.query_params.get('recipes_limit')
         try:
             recipes_limit = int(recipes_limit)
         except (TypeError, ValueError):
             recipes_limit = None
-        recipes = user.recipes.all()[:recipes_limit]
+        recipes = author.recipes.all()[:recipes_limit]
         serializer = RecipeListSerializer(recipes, many=True,
                                           context={'request': request})
         return serializer.data

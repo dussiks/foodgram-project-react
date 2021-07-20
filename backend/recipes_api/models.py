@@ -89,3 +89,41 @@ class Follow(models.Model):
 
     def __str__(self):
         return f'{self.follower} подписан на {self.following}'
+
+
+class Favorite(models.Model):
+    user = models.ForeignKey(CustomUser, on_delete=models.CASCADE,
+                             related_name='favorites')
+    recipe = models.ForeignKey(Recipe, on_delete=models.CASCADE,
+                               related_name='favorite_recipes')
+
+    class Meta:
+        verbose_name = 'избранное'
+        verbose_name_plural = 'избранные'
+        constraints = [
+            models.UniqueConstraint(
+                fields=['user', 'recipe'], name='unique_favorite'
+            )
+        ]
+
+    def __str__(self):
+        return f'{self.recipe} в избранном {self.user}'
+
+
+class ShoppingCart(models.Model):
+    user = models.ForeignKey(CustomUser, on_delete=models.CASCADE,
+                             related_name='shopped_users')
+    recipe = models.ForeignKey(Recipe, on_delete=models.CASCADE,
+                               related_name='shopped_recipes')
+
+    class Meta:
+        verbose_name = 'рецепт в корзине'
+        verbose_name_plural = 'рецепты в корзине'
+        constraints = [
+            models.UniqueConstraint(
+                fields=['user', 'recipe'], name='unique_shop'
+            )
+        ]
+
+    def __str__(self):
+        return f'{self.recipe} в корзине {self.user}'
