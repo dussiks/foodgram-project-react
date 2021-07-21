@@ -1,8 +1,8 @@
 from drf_extra_fields.fields import Base64ImageField
 from rest_framework import serializers
 
-from .models import Ingredient, Recipe, RecipeIngredient, Tag
-from users.models import CustomUser
+from .models import (CustomUser, Favorite, Ingredient, Recipe,
+                     RecipeIngredient, ShoppingCart, Tag)
 from users.serializers import CustomUserSerializer
 
 
@@ -32,17 +32,43 @@ class RecipeIngredientSerializer(serializers.ModelSerializer):
         fields = ('id', 'name', 'measurement_unit', 'amount',)
 
 
+class FavoriteAndShoppingRecipeSerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = Recipe
+        fields = ('id', 'name', 'image', 'cooking_time',)
+
+
 class RecipeListSerializer(serializers.ModelSerializer):
     author = CustomUserSerializer(many=False, required=True)
     tags = TagSerializer(many=True)
     ingredients = RecipeIngredientSerializer(many=True,
                                              source='recipe_ingredients')
     image = Base64ImageField()
+    is_favorited = serializers.SerializerMethodField()
+    is_in_shopping_cart = serializers.SerializerMethodField()
 
     class Meta:
         model = Recipe
-        fields = ('id', 'author', 'tags', 'ingredients',
-                  'name', 'image', 'text', 'cooking_time')
+        fields = ('id', 'tags', 'author', 'ingredients', 'is_favorited',
+                  'is_in_shopping_cart', 'name', 'image', 'text',
+                  'cooking_time')
+
+    def get_is_favorited(self, recipe):
+        current_user = self.context.get('request').user
+        if current_user.is_anonymous:
+            return False
+        return Favorite.objects.filter(
+            user=current_user, recipe=recipe
+        ).exists()
+
+    def get_is_in_shopping_cart(self, recipe):
+        current_user = self.context.get('request').user
+        if current_user.is_anonymous:
+            return False
+        return ShoppingCart.objects.filter(
+            user=current_user, recipe=recipe
+        ).exists()
 
 
 class CustomUserSubscribeSerializer(CustomUserSerializer):
