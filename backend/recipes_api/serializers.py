@@ -50,9 +50,9 @@ class RecipeListSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Recipe
-        fields = ('id', 'tags', 'author', 'ingredients', 'is_favorited',
-                  'is_in_shopping_cart', 'name', 'image', 'text',
-                  'cooking_time')
+        fields = ('id', 'tags', 'author', 'ingredients',
+                  'is_favorited', 'is_in_shopping_cart', 'name',
+                  'image', 'text', 'cooking_time')
 
     def get_is_favorited(self, recipe):
         current_user = self.context.get('request').user
@@ -71,6 +71,18 @@ class RecipeListSerializer(serializers.ModelSerializer):
         ).exists()
 
 
+class RecipeCreateSerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = Recipe
+        fields = ('id', 'ingredients', 'tags', 'image',
+                  'name', 'text', 'cooking_time', )
+
+
+
+
+
+
 class CustomUserSubscribeSerializer(CustomUserSerializer):
     recipes = serializers.SerializerMethodField()
     recipes_count = serializers.SerializerMethodField()
@@ -80,7 +92,7 @@ class CustomUserSubscribeSerializer(CustomUserSerializer):
         fields = CustomUserSerializer.Meta.fields + ('recipes',
                                                      'recipes_count', )
 
-    def get_recipes_count(self, author):
+    def get_recipes_count(self, **kwargs):
         recipes_count = self.context.get('recipes_count')
         return recipes_count
 

@@ -1,6 +1,8 @@
+from django.db import models
+
 from django.core.exceptions import ObjectDoesNotExist
 from rest_framework import mixins, permissions, viewsets, status
-from rest_framework.decorators import action, api_view, permission_classes
+from rest_framework.decorators import api_view, permission_classes
 from rest_framework.generics import get_object_or_404
 from rest_framework.response import Response
 from rest_framework.views import APIView
@@ -9,11 +11,11 @@ from rest_framework.viewsets import ReadOnlyModelViewSet
 from .models import (CustomUser, Favorite, Follow,
                      Ingredient, Recipe, ShoppingCart, Tag)
 from .paginator import CustomPagination
-from .permissions import IsOwnerOrAdmin
-from .serializers import (CustomUserSerializer, CustomUserSubscribeSerializer,
+from .permissions import IsOwner
+from .serializers import (CustomUserSubscribeSerializer,
                           FavoriteAndShoppingRecipeSerializer,
-                          IngredientSerializer, RecipeListSerializer,
-                          TagSerializer)
+                          IngredientSerializer, RecipeCreateSerializer,
+                          RecipeListSerializer, TagSerializer)
 
 
 class TagViewSet(ReadOnlyModelViewSet):
@@ -27,76 +29,92 @@ class IngredientViewSet(ReadOnlyModelViewSet):
     serializer_class = IngredientSerializer
     queryset = Ingredient.objects.all()
     permission_classes = (permissions.AllowAny, )
+    search_fields = ['name', ]
     pagination_class = None
 
 
-class RecipeListViewSet(mixins.ListModelMixin,
-                        mixins.RetrieveModelMixin,
-                        mixins.DestroyModelMixin,
-                        viewsets.GenericViewSet):
+class RecipeListViewSet(viewsets.ModelViewSet):
     serializer_class = RecipeListSerializer
     queryset = Recipe.objects.all()
     permission_classes = (permissions.AllowAny, )
     filterset_fields = ['author', ]
 
-    @action(detail=True, methods=['get', 'delete'],
-            permission_classes=[permissions.IsAuthenticated])
-    def favorite(self, request, pk=None):
+    def get_permissions(self):
+        if self.action == 'create':
+            return permissions.IsAuthenticated()
+        if self.action in ['destroy', 'partial_update', 'update']:
+            return IsOwner()
+        return permissions.AllowAny(),
+
+    def get_serializer_class(self):
+        if self.action in ['list', 'retrieve']:
+            return RecipeListSerializer
+        return RecipeCreateSerializer
+
+    def get_serializer_context(self):
+        context = super().get_serializer_context()
+        context.update({'request': self.request})
+        return context
+
+
+class FavoriteViewSet(APIView):
+    permission_classes = (permissions.IsAuthenticated,)
+
+    def get(self, request, pk=None):
         current_user = request.user
         recipe = get_object_or_404(Recipe, pk=pk)
 
-        if request.method == 'GET':
-            if recipe.favorites.filter(user=current_user).exists():
-                error_text = "Recipe already in user's favorites."
-                return Response(error_text,
-                                status=status.HTTP_400_BAD_REQUEST)
-            Favorite.objects.create(user=current_user, recipe=recipe)
-            serializer = FavoriteAndShoppingRecipeSerializer(recipe)
-            return Response(serializer.data, status=status.HTTP_201_CREATED)
+        if recipe.favorites.filter(user=current_user).exists():
+            error_text = "Recipe already in user's favorites."
+            return Response(error_text, status=status.HTTP_400_BAD_REQUEST)
+        Favorite.objects.create(user=current_user, recipe=recipe)
+        serializer = FavoriteAndShoppingRecipeSerializer(recipe)
+        return Response(serializer.data, status=status.HTTP_201_CREATED)
 
-        elif request.method == 'DELETE':
-            try:
-                fav_recipe = recipe.favorites.get(user=current_user)
-            except ObjectDoesNotExist:
-                error_text = 'Choosen recipe is not in favorites.'
-                return Response(error_text,
-                                status=status.HTTP_400_BAD_REQUEST)
-            fav_recipe.delete()
-            return Response(status=status.HTTP_204_NO_CONTENT)
+    def delete(self, request, pk=None):
+        current_user = request.user
+        recipe = get_object_or_404(Recipe, pk=pk)
+        try:
+            fav_recipe = recipe.favorites.get(user=current_user)
+        except models.Recipe.DoesNotExist:
+            error_text = 'Choosen recipe is not in favorites.'
+            return Response(error_text, status=status.HTTP_400_BAD_REQUEST)
+        fav_recipe.delete()
+        return Response(status=status.HTTP_204_NO_CONTENT)
 
-    @action(detail=True, methods=['get', 'delete'],
-            permission_classes=[permissions.IsAuthenticated])
-    def shopping_cart(self, request, pk=None):
+
+class ShoppingCartViewSet(APIView):
+    permission_classes = (permissions.IsAuthenticated,)
+
+    def get(self, request, pk=None):
         current_user = request.user
         recipe = get_object_or_404(Recipe, pk=pk)
 
-        if request.method == 'GET':
-            if recipe.shopping_carts.filter(user=current_user).exists():
-                error_text = 'Recipe already in shopping cart.'
-                return Response(error_text,
-                                status=status.HTTP_400_BAD_REQUEST)
-            ShoppingCart.objects.create(user=current_user, recipe=recipe)
-            serializer = FavoriteAndShoppingRecipeSerializer(recipe)
-            return Response(serializer.data, status=status.HTTP_201_CREATED)
+        if recipe.shopping_carts.filter(user=current_user).exists():
+            error_text = 'Recipe already in shopping cart.'
+            return Response(error_text, status=status.HTTP_400_BAD_REQUEST)
+        ShoppingCart.objects.create(user=current_user, recipe=recipe)
+        serializer = FavoriteAndShoppingRecipeSerializer(recipe)
+        return Response(serializer.data, status=status.HTTP_201_CREATED)
 
-        elif request.method == 'DELETE':
-            try:
-                shopped_recipe = recipe.shopping_carts.get(user=current_user)
-            except ObjectDoesNotExist:
-                error_text = 'Choosen recipe is not in shopping cart.'
-                return Response(error_text,
-                                status=status.HTTP_400_BAD_REQUEST)
-            shopped_recipe.delete()
-            return Response(status=status.HTTP_204_NO_CONTENT)
+    def delete(self, request, pk=None):
+        current_user = request.user
+        recipe = get_object_or_404(Recipe, pk=pk)
+        try:
+            shopped_recipe = recipe.shopping_carts.get(user=current_user)
+        except ObjectDoesNotExist:
+            error_text = 'Choosen recipe is not in shopping cart.'
+            return Response(error_text, status=status.HTTP_400_BAD_REQUEST)
+        shopped_recipe.delete()
+        return Response(status=status.HTTP_204_NO_CONTENT)
 
 
 class SubscriptionViewSet(APIView):
     permission_classes = (permissions.IsAuthenticated, )
 
-    def get(self, request, **kwargs):
+    def get(self, request, pk=None):
         user = request.user
-        recipe_author = get_object_or_404(CustomUser,
-                                          pk=self.kwargs.get('id'))
+        recipe_author = get_object_or_404(CustomUser, pk=pk)
         if user == recipe_author:
             error_text = 'You can not subscribe yourself.'
             return Response(error_text, status=status.HTTP_400_BAD_REQUEST)
@@ -115,10 +133,9 @@ class SubscriptionViewSet(APIView):
         )
         return Response(serializer.data, status=status.HTTP_201_CREATED)
 
-    def delete(self, request, **kwargs):
+    def delete(self, request, pk=None):
         follower = request.user
-        recipe_author = get_object_or_404(CustomUser,
-                                          pk=self.kwargs.get('id'))
+        recipe_author = get_object_or_404(CustomUser, pk=pk)
         try:
             subscription = follower.followers.get(following=recipe_author)
         except ObjectDoesNotExist:
@@ -130,7 +147,7 @@ class SubscriptionViewSet(APIView):
 
 
 @api_view(['GET'])
-@permission_classes([IsOwnerOrAdmin])
+@permission_classes([permissions.IsAuthenticated, ])
 def user_subscriptions(request):
     user = request.user
     subscripts = user.followers.select_related('following').all()
