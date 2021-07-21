@@ -43,10 +43,10 @@ class RecipeListViewSet(mixins.ListModelMixin,
             permission_classes=[permissions.IsAuthenticated])
     def favorite(self, request, pk=None):
         current_user = request.user
-        recipe = get_object_or_404(Recipe, pk=self.kwargs.get('pk'))
+        recipe = get_object_or_404(Recipe, pk=pk)
 
         if request.method == 'GET':
-            if recipe.favorite_recipes.filter(user=current_user).exists():
+            if recipe.favorites.filter(user=current_user).exists():
                 error_text = "Recipe already in user's favorites."
                 return Response(error_text,
                                 status=status.HTTP_400_BAD_REQUEST)
@@ -56,7 +56,7 @@ class RecipeListViewSet(mixins.ListModelMixin,
 
         elif request.method == 'DELETE':
             try:
-                fav_recipe = recipe.favorite_recipes.get(user=current_user)
+                fav_recipe = recipe.favorites.get(user=current_user)
             except ObjectDoesNotExist:
                 error_text = 'Choosen recipe is not in favorites.'
                 return Response(error_text,
@@ -64,11 +64,36 @@ class RecipeListViewSet(mixins.ListModelMixin,
             fav_recipe.delete()
             return Response(status=status.HTTP_204_NO_CONTENT)
 
+    @action(detail=True, methods=['get', 'delete'],
+            permission_classes=[permissions.IsAuthenticated])
+    def shopping_cart(self, request, pk=None):
+        current_user = request.user
+        recipe = get_object_or_404(Recipe, pk=pk)
+
+        if request.method == 'GET':
+            if recipe.shopping_carts.filter(user=current_user).exists():
+                error_text = 'Recipe already in shopping cart.'
+                return Response(error_text,
+                                status=status.HTTP_400_BAD_REQUEST)
+            ShoppingCart.objects.create(user=current_user, recipe=recipe)
+            serializer = FavoriteAndShoppingRecipeSerializer(recipe)
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
+
+        elif request.method == 'DELETE':
+            try:
+                shopped_recipe = recipe.shopping_carts.get(user=current_user)
+            except ObjectDoesNotExist:
+                error_text = 'Choosen recipe is not in shopping cart.'
+                return Response(error_text,
+                                status=status.HTTP_400_BAD_REQUEST)
+            shopped_recipe.delete()
+            return Response(status=status.HTTP_204_NO_CONTENT)
+
 
 class SubscriptionViewSet(APIView):
     permission_classes = (permissions.IsAuthenticated, )
 
-    def get(self, request):
+    def get(self, request, **kwargs):
         user = request.user
         recipe_author = get_object_or_404(CustomUser,
                                           pk=self.kwargs.get('id'))
@@ -90,7 +115,7 @@ class SubscriptionViewSet(APIView):
         )
         return Response(serializer.data, status=status.HTTP_201_CREATED)
 
-    def delete(self, request):
+    def delete(self, request, **kwargs):
         follower = request.user
         recipe_author = get_object_or_404(CustomUser,
                                           pk=self.kwargs.get('id'))
