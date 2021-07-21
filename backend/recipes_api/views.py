@@ -41,9 +41,9 @@ class RecipeListViewSet(viewsets.ModelViewSet):
 
     def get_permissions(self):
         if self.action == 'create':
-            return permissions.IsAuthenticated()
+            return permissions.IsAuthenticated(),
         if self.action in ['destroy', 'partial_update', 'update']:
-            return IsOwner()
+            return IsOwner(),
         return permissions.AllowAny(),
 
     def get_serializer_class(self):

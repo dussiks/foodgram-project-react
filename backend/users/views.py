@@ -1,4 +1,4 @@
-from rest_framework import permissions, status, viewsets
+from rest_framework import permissions, viewsets
 from rest_framework.decorators import action
 from rest_framework.response import Response
 
@@ -11,7 +11,17 @@ class CustomUserModelViewSet(viewsets.ModelViewSet):
     permission_classes = (permissions.IsAuthenticated, )
     queryset = CustomUser.objects.all()
 
-    @action(detail=False, methods=['GET', 'PATCH'],
+    def get_permissions(self):
+        if self.action == 'create':
+            return permissions.AllowAny(),
+        return permissions.IsAuthenticated(),
+
+    def get_serializer_class(self):
+        if self.action == 'create':
+            return CustomUserCreateSerializer
+        return CustomUserSerializer
+
+    @action(detail=False, methods=['GET', 'PUT'],
             permission_classes=(permissions.IsAuthenticated,))
     def me(self, request):
         user = self.request.user
@@ -21,9 +31,3 @@ class CustomUserModelViewSet(viewsets.ModelViewSet):
         serializer.is_valid(raise_exception=True)
         self.perform_update(serializer)
         return Response(serializer.data)
-
-    def create(self, request, *args, **kwargs):
-        serializer = CustomUserCreateSerializer(data=request.data)
-        serializer.is_valid(raise_exception=True)
-        serializer.save()
-        return Response(serializer.data, status=status.HTTP_201_CREATED)

@@ -22,10 +22,17 @@ class CustomUserSerializer(serializers.ModelSerializer):
 
 
 class CustomUserCreateSerializer(serializers.ModelSerializer):
+    password = serializers.CharField(
+        max_length=150,
+        write_only=True,
+        required=True,
+        style={'input_type': 'password'}
+    )
 
     class Meta:
         model = CustomUser
-        fields = ('id', 'username', 'first_name', 'last_name', 'email')
+        fields = ('id', 'username', 'first_name',
+                  'last_name', 'email', 'password')
 
     def create(self, validated_data):
         user = CustomUser(
