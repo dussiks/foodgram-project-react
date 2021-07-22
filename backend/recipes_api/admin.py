@@ -24,13 +24,13 @@ class IngredientAdmin(admin.ModelAdmin):
 
 class RecipeAdmin(admin.ModelAdmin):
     list_display = ('name', 'text', 'cooking_time')
-    list_filter = ('name', 'tags',)
+    list_filter = ('author', 'name', 'tags',)
     empty_value_display = '-пусто-'
     inlines = [RecipeIngredientInline, ]
 
 
 class FollowAdmin(admin.ModelAdmin):
-    list_display = ('follower', 'following',)
+    list_display = ('user', 'author',)
     empty_value_display = '-пусто-'
 
 

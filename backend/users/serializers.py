@@ -17,7 +17,7 @@ class CustomUserSerializer(serializers.ModelSerializer):
         if current_user.is_anonymous:
             return False
         return (current_user == author) or Follow.objects.filter(
-            follower=current_user, following=author
+            user=current_user, author=author
         ).exists()
 
 

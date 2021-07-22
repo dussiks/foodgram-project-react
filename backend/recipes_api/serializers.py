@@ -51,8 +51,8 @@ class RecipeListSerializer(serializers.ModelSerializer):
     class Meta:
         model = Recipe
         fields = ('id', 'tags', 'author', 'ingredients',
-                  'is_favorited', 'is_in_shopping_cart', 'name',
-                  'image', 'text', 'cooking_time')
+                  'is_favorited', 'is_in_shopping_cart',
+                  'name', 'image', 'text', 'cooking_time')
 
     def get_is_favorited(self, recipe):
         current_user = self.context.get('request').user
@@ -79,10 +79,6 @@ class RecipeCreateSerializer(serializers.ModelSerializer):
                   'name', 'text', 'cooking_time', )
 
 
-
-
-
-
 class CustomUserSubscribeSerializer(CustomUserSerializer):
     recipes = serializers.SerializerMethodField()
     recipes_count = serializers.SerializerMethodField()
@@ -92,18 +88,14 @@ class CustomUserSubscribeSerializer(CustomUserSerializer):
         fields = CustomUserSerializer.Meta.fields + ('recipes',
                                                      'recipes_count', )
 
-    def get_recipes_count(self, **kwargs):
-        recipes_count = self.context.get('recipes_count')
-        return recipes_count
+    def get_recipes_count(self, author):
+        return author.recipes.all().count()
 
     def get_recipes(self, author):
         request = self.context.get('request')
-        recipes_limit = request.query_params.get('recipes_limit')
-        try:
-            recipes_limit = int(recipes_limit)
-        except (TypeError, ValueError):
-            recipes_limit = None
+        recipes_limit = self.context.get('recipes_limit')
         recipes = author.recipes.all()[:recipes_limit]
-        serializer = RecipeListSerializer(recipes, many=True,
-                                          context={'request': request})
+        serializer = FavoriteAndShoppingRecipeSerializer(
+            recipes, many=True, context={'request': request}
+        )
         return serializer.data
