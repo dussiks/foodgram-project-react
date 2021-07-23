@@ -1,9 +1,40 @@
-from drf_extra_fields.fields import Base64ImageField
+import base64
+import six
+import uuid
+# from drf_extra_fields.fields import Base64ImageField
+from django.core.files.base import ContentFile
 from rest_framework import serializers
 
 from .models import (CustomUser, Favorite, Ingredient, Recipe,
                      RecipeIngredient, ShoppingCart, Tag)
 from users.serializers import CustomUserSerializer
+
+
+class Base64ImageField(serializers.ImageField):
+
+    def to_internal_value(self, data):
+        if isinstance(data, six.string_types):
+            if 'data:' in data and ';base64,' in data:
+                header, data = data.split(';base64,')
+
+            try:
+                decoded_file = base64.b64decode(data)
+            except TypeError:
+                self.fail('invalid_image')
+
+            file_name = str(uuid.uuid4())[:20]
+            file_extension = self.get_file_extension(file_name, decoded_file)
+            complete_file_name = "%s.%s" % (file_name, file_extension, )
+            data = ContentFile(decoded_file, name=complete_file_name)
+
+        return super(Base64ImageField, self).to_internal_value(data)
+
+    def get_file_extension(self, file_name, decoded_file):
+        import imghdr
+
+        extension = imghdr.what(file_name, decoded_file)
+        extension = "jpg" if extension == "jpeg" else extension
+        return extension
 
 
 class TagSerializer(serializers.ModelSerializer):
@@ -39,6 +70,58 @@ class FavoriteAndShoppingRecipeSerializer(serializers.ModelSerializer):
         fields = ('id', 'name', 'image', 'cooking_time',)
 
 
+class RecipeCreateUpdateSerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = Recipe
+        fields = ('id', 'ingredients', 'tags', 'image',
+                  'name', 'text', 'cooking_time', )
+
+    def create(self, validated_data):
+        user = self.context.get('request').user
+        ingredients = validated_data.pop('ingredients')
+        tags = validated_data.pop('tags')
+        recipe = Recipe.objects.create(
+            author=user, **validated_data)
+        recipe.save()
+        recipe.tags.set(tags)
+        for item in ingredients:
+            ingredient = Ingredient.objects.get(id=item.id)
+            amount = item['amount']
+            RecipeIngredient.objects.create(
+                ingredient=ingredient,
+                recipe=recipe,
+                amount=amount
+            )
+
+        return recipe
+
+    def update(self, recipe, validated_data):
+        ingredients = validated_data.pop('ingredients')
+        RecipeIngredient.objects.filter(recipe=recipe).delete()
+        for new_ingredient in ingredients:
+            RecipeIngredient.objects.create(
+                ingredient=Ingredient.objects.get(id=new_ingredient.id),
+                recipe=recipe,
+                amount=new_ingredient['amount']
+            )
+        recipe.author = validated_data.pop('author')
+        recipe.name = validated_data.pop('name')
+        recipe.text = validated_data.pop('text')
+        recipe.image = validated_data.pop('image')
+        recipe.cooking_time = validated_data.pop('cooking_time')
+        recipe.save()
+        return recipe
+
+    def to_representation(self, instance):
+        return RecipeListSerializer(
+            instance,
+            context={
+                'request': self.context.get('request')
+            }
+        ).data
+
+
 class RecipeListSerializer(serializers.ModelSerializer):
     author = CustomUserSerializer(many=False, read_only=True)
     tags = TagSerializer(many=True, read_only=True)
@@ -69,14 +152,6 @@ class RecipeListSerializer(serializers.ModelSerializer):
         return ShoppingCart.objects.filter(
             user=current_user, recipe=recipe
         ).exists()
-
-
-class RecipeCreateSerializer(serializers.ModelSerializer):
-
-    class Meta:
-        model = Recipe
-        fields = ('id', 'ingredients', 'tags', 'image',
-                  'name', 'text', 'cooking_time', )
 
 
 class CustomUserSubscribeSerializer(CustomUserSerializer):

@@ -60,6 +60,10 @@ class Recipe(models.Model):
     def __str__(self):
         return self.name
 
+    def favorites_count(self):
+        return str(self.favorites.all().count())
+    favorites_count.short_description = 'В избранном:'
+
 
 class RecipeIngredient(models.Model):
     recipe = models.ForeignKey(Recipe, on_delete=models.CASCADE,

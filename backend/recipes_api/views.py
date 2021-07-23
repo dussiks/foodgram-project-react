@@ -8,46 +8,15 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 
 from .filters import RecipeFilter
-from .models import (CustomUser, Favorite, Follow, Ingredient,
-                     Recipe, RecipeIngredient, ShoppingCart, Tag)
+from .models import (CustomUser, Favorite, Follow,
+                     Ingredient, Recipe, ShoppingCart, Tag)
 from .paginator import CustomPagination
+from .pdf import create_pdffile_response
 from .permissions import IsOwnerOrAdmin
 from .serializers import (CustomUserSubscribeSerializer,
                           FavoriteAndShoppingRecipeSerializer,
-                          IngredientSerializer, RecipeCreateSerializer,
+                          IngredientSerializer, RecipeCreateUpdateSerializer,
                           RecipeListSerializer, TagSerializer)
-
-
-def create_shop_ingredients(user_id: int) -> dict:
-    """
-    Prepares data about ingredients from recipes that are added to
-    shopping_cart for further transaction to pdf creating view.
-    :param user_id - id of the user owner of shopping_cart.
-    """
-    user = CustomUser.objects.get(id=user_id)
-    shopping_cart = user.shopping_carts.select_related('recipe').all()
-
-    shop_ingredients = {}
-    for item in shopping_cart:
-        recipe = item.recipe
-        ingredients = RecipeIngredient.objects.filter(recipe=recipe)
-
-        for ingredient in ingredients:
-            name = ingredient.ingredient.name
-            unit = ingredient.ingredient.measurement_unit
-            amount = ingredient.amount
-
-            if name not in shop_ingredients:
-                shop_ingredients[name] = {
-                    'amount': amount,
-                    'unit': unit
-                }
-            else:
-                shop_ingredients[name]['amount'] = (
-                        shop_ingredients[name]['amount'] + amount
-                )
-
-    return shop_ingredients
 
 
 class TagViewSet(viewsets.ModelViewSet):
@@ -88,7 +57,7 @@ class RecipeListViewSet(viewsets.ModelViewSet):
     def get_serializer_class(self):
         if self.action in ['list', 'retrieve']:
             return RecipeListSerializer
-        return RecipeCreateSerializer
+        return RecipeCreateUpdateSerializer
 
     def get_serializer_context(self):
         context = super().get_serializer_context()
@@ -98,9 +67,8 @@ class RecipeListViewSet(viewsets.ModelViewSet):
     @action(detail=False, permission_classes=[IsOwnerOrAdmin])
     def download_shopping_cart(self, request):
         current_user = request.user
-        buying_list = create_shop_ingredients(user_id=current_user.id)
-        context = {'buying_list': buying_list}
-        return Response(context)
+        response = create_pdffile_response(user_id=current_user.id)
+        return response
 
 
 class FavoriteViewSet(APIView):

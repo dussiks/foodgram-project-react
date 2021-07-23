@@ -23,7 +23,7 @@ class IngredientAdmin(admin.ModelAdmin):
 
 
 class RecipeAdmin(admin.ModelAdmin):
-    list_display = ('name', 'text', 'cooking_time')
+    list_display = ('name', 'text', 'cooking_time', 'favorites_count')
     list_filter = ('author', 'name', 'tags',)
     empty_value_display = '-пусто-'
     inlines = [RecipeIngredientInline, ]
