@@ -1,12 +1,13 @@
 from django.db import models
 
 from django.core.exceptions import ObjectDoesNotExist
-from rest_framework import mixins, permissions, viewsets, status
+from rest_framework import permissions, status, viewsets
 from rest_framework.decorators import action, api_view, permission_classes
 from rest_framework.generics import get_object_or_404
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
+from .filters import RecipeFilter
 from .models import (CustomUser, Favorite, Follow, Ingredient,
                      Recipe, RecipeIngredient, ShoppingCart, Tag)
 from .paginator import CustomPagination
@@ -75,7 +76,7 @@ class IngredientViewSet(viewsets.ModelViewSet):
 class RecipeListViewSet(viewsets.ModelViewSet):
     serializer_class = RecipeListSerializer
     queryset = Recipe.objects.all()
-    filterset_fields = ['author', ]
+    filter_class = RecipeFilter
 
     def get_permissions(self):
         if self.action == 'create':
