@@ -65,7 +65,6 @@ def create_pdffile_response(user_id: int) -> object:
     textobject = pdf.beginText()
     textobject.setTextOrigin(inch, inch)
     textobject.setFont('Verdana', 20)
-
     pdf_lines = []
     head_line = 'СПИСОК ИНГРЕДИЕНТОВ К ПОКУПКЕ:'
     pdf_lines.append(head_line)
