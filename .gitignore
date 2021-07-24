@@ -130,8 +130,10 @@ dmypy.json
 
 # .idea
 .idea
+.gitkeep
 
 static/
 media/
 
 migrations/
+data/
