@@ -1,16 +1,16 @@
+from djoser.serializers import UserSerializer
 from rest_framework import serializers
 
 from .models import CustomUser
 from recipes_api.models import Follow
 
 
-class CustomUserSerializer(serializers.ModelSerializer):
+class CustomUserSerializer(UserSerializer):
     is_subscribed = serializers.SerializerMethodField()
 
     class Meta:
         model = CustomUser
-        fields = ('id', 'username', 'email',
-                  'first_name', 'last_name', 'is_subscribed', )
+        fields = UserSerializer.Meta.fields + ('is_subscribed',)
 
     def get_is_subscribed(self, author):
         current_user = self.context.get('request').user

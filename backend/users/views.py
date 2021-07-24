@@ -1,33 +1,18 @@
-from rest_framework import permissions, viewsets
-from rest_framework.decorators import action
-from rest_framework.response import Response
+from djoser.views import UserViewSet
+from rest_framework import permissions
 
 from .models import CustomUser
-from .serializers import CustomUserSerializer, CustomUserCreateSerializer
+from .serializers import CustomUserSerializer
+from .permissions import IsCurrentUserOrAdmin
 
 
-class CustomUserModelViewSet(viewsets.ModelViewSet):
-    serializer_class = CustomUserSerializer
-    permission_classes = (permissions.IsAuthenticated, )
+class CustomUserModelViewSet(UserViewSet):
     queryset = CustomUser.objects.all()
+    serializer_class = CustomUserSerializer
 
     def get_permissions(self):
         if self.action == 'create':
             return permissions.AllowAny(),
+        elif self.action in ['destroy', 'partial_update', 'update']:
+            return IsCurrentUserOrAdmin(),
         return permissions.IsAuthenticated(),
-
-    def get_serializer_class(self):
-        if self.action == 'create':
-            return CustomUserCreateSerializer
-        return CustomUserSerializer
-
-    @action(detail=False, methods=['GET', 'PUT'],
-            permission_classes=(permissions.IsAuthenticated,))
-    def me(self, request):
-        user = self.request.user
-        serializer = self.get_serializer(
-            user, data=request.data, partial=True,
-        )
-        serializer.is_valid(raise_exception=True)
-        self.perform_update(serializer)
-        return Response(serializer.data)

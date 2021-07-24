@@ -12,7 +12,7 @@ from .models import (CustomUser, Favorite, Follow,
                      Ingredient, Recipe, ShoppingCart, Tag)
 from .paginator import CustomPagination
 from .pdf import create_pdffile_response
-from .permissions import IsOwnerOrAdmin
+from .permissions import IsAuthorOrAdmin, IsAdminOrReadOnly
 from .serializers import (CustomUserSubscribeSerializer,
                           FavoriteAndShoppingRecipeSerializer,
                           IngredientSerializer, RecipeCreateUpdateSerializer,
@@ -23,11 +23,7 @@ class TagViewSet(viewsets.ModelViewSet):
     serializer_class = TagSerializer
     queryset = Tag.objects.all()
     pagination_class = None
-
-    def get_permissions(self):
-        if self.action in ['list', 'retrieve']:
-            return permissions.AllowAny(),
-        return permissions.IsAdminUser(),
+    permission_classes = (IsAdminOrReadOnly, )
 
 
 class IngredientViewSet(viewsets.ModelViewSet):
@@ -35,15 +31,10 @@ class IngredientViewSet(viewsets.ModelViewSet):
     queryset = Ingredient.objects.all()
     search_fields = ['name', ]
     pagination_class = None
-
-    def get_permissions(self):
-        if self.action in ['list', 'retrieve']:
-            return permissions.AllowAny(),
-        return permissions.IsAdminUser(),
+    permission_classes = (IsAdminOrReadOnly, )
 
 
-class RecipeListViewSet(viewsets.ModelViewSet):
-    serializer_class = RecipeListSerializer
+class RecipeViewSet(viewsets.ModelViewSet):
     queryset = Recipe.objects.all()
     filter_class = RecipeFilter
 
@@ -51,7 +42,7 @@ class RecipeListViewSet(viewsets.ModelViewSet):
         if self.action == 'create':
             return permissions.IsAuthenticated(),
         if self.action in ['destroy', 'partial_update', 'update']:
-            return IsOwnerOrAdmin(),
+            return IsAuthorOrAdmin(),
         return permissions.AllowAny(),
 
     def get_serializer_class(self):
@@ -59,12 +50,7 @@ class RecipeListViewSet(viewsets.ModelViewSet):
             return RecipeListSerializer
         return RecipeCreateUpdateSerializer
 
-    def get_serializer_context(self):
-        context = super().get_serializer_context()
-        context.update({'request': self.request})
-        return context
-
-    @action(detail=False, permission_classes=[IsOwnerOrAdmin])
+    @action(detail=False, permission_classes=(IsAuthorOrAdmin, ))
     def download_shopping_cart(self, request):
         current_user = request.user
         response = create_pdffile_response(user_id=current_user.id)
@@ -163,7 +149,7 @@ class SubscriptionViewSet(APIView):
         return Response(status=status.HTTP_204_NO_CONTENT)
 
 
-@api_view(['GET'])
+@api_view()
 @permission_classes([permissions.IsAuthenticated, ])
 def user_subscriptions(request):
     recipes_limit = request.query_params.get('recipes_limit')

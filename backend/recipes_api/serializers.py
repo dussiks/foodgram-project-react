@@ -26,7 +26,6 @@ class Base64ImageField(serializers.ImageField):
             file_extension = self.get_file_extension(file_name, decoded_file)
             complete_file_name = "%s.%s" % (file_name, file_extension, )
             data = ContentFile(decoded_file, name=complete_file_name)
-
         return super(Base64ImageField, self).to_internal_value(data)
 
     def get_file_extension(self, file_name, decoded_file):
@@ -70,58 +69,6 @@ class FavoriteAndShoppingRecipeSerializer(serializers.ModelSerializer):
         fields = ('id', 'name', 'image', 'cooking_time',)
 
 
-class RecipeCreateUpdateSerializer(serializers.ModelSerializer):
-
-    class Meta:
-        model = Recipe
-        fields = ('id', 'ingredients', 'tags', 'image',
-                  'name', 'text', 'cooking_time', )
-
-    def create(self, validated_data):
-        user = self.context.get('request').user
-        ingredients = validated_data.pop('ingredients')
-        tags = validated_data.pop('tags')
-        recipe = Recipe.objects.create(
-            author=user, **validated_data)
-        recipe.save()
-        recipe.tags.set(tags)
-        for item in ingredients:
-            ingredient = Ingredient.objects.get(id=item.id)
-            amount = item['amount']
-            RecipeIngredient.objects.create(
-                ingredient=ingredient,
-                recipe=recipe,
-                amount=amount
-            )
-
-        return recipe
-
-    def update(self, recipe, validated_data):
-        ingredients = validated_data.pop('ingredients')
-        RecipeIngredient.objects.filter(recipe=recipe).delete()
-        for new_ingredient in ingredients:
-            RecipeIngredient.objects.create(
-                ingredient=Ingredient.objects.get(id=new_ingredient.id),
-                recipe=recipe,
-                amount=new_ingredient['amount']
-            )
-        recipe.author = validated_data.pop('author')
-        recipe.name = validated_data.pop('name')
-        recipe.text = validated_data.pop('text')
-        recipe.image = validated_data.pop('image')
-        recipe.cooking_time = validated_data.pop('cooking_time')
-        recipe.save()
-        return recipe
-
-    def to_representation(self, instance):
-        return RecipeListSerializer(
-            instance,
-            context={
-                'request': self.context.get('request')
-            }
-        ).data
-
-
 class RecipeListSerializer(serializers.ModelSerializer):
     author = CustomUserSerializer(many=False, read_only=True)
     tags = TagSerializer(many=True, read_only=True)
@@ -154,6 +101,91 @@ class RecipeListSerializer(serializers.ModelSerializer):
         ).exists()
 
 
+class IngredientWithAmountSerializer(serializers.Serializer):
+    id = serializers.IntegerField()
+    amount = serializers.IntegerField()
+
+    def validate(self, data):
+        if not Ingredient.objects.filter(id=data['id']).exists():
+            raise serializers.ValidationError('No ingredient with such id.')
+
+        if not isinstance(data['amount'], int):
+            raise serializers.ValidationError(
+                f'Amount for id = {data["id"]} should be integer.'
+            )
+
+        if data['amount'] <= 0:
+            raise serializers.ValidationError(
+                f'Amount for id = {data["id"]} should be grater than 0.'
+            )
+        return data
+
+
+class RecipeCreateUpdateSerializer(serializers.ModelSerializer):
+    ingredients = IngredientWithAmountSerializer(many=True)
+    tags = serializers.PrimaryKeyRelatedField(
+        queryset=Tag.objects.all(), many=True
+    )
+    image = Base64ImageField()
+
+    class Meta:
+        model = Recipe
+        fields = ('ingredients', 'tags',
+                  'name', 'text', 'cooking_time')
+
+    def create(self, validated_data):
+        request = self.context.get('request')
+        author = request.user
+        ingredients = validated_data.pop('ingredients')
+        tags = validated_data.pop('tags')
+        recipe = Recipe.objects.create(author=author, **validated_data)
+        recipe.save()
+        recipe.tags.set(tags)
+
+        for item in ingredients:
+            ingredient = Ingredient.objects.get(id=item.get('id'))
+            amount = item.get('amount')
+            recipe_ingredient = RecipeIngredient.objects.create(
+                ingredient=ingredient,
+                recipe=recipe,
+                amount=amount
+            )
+            recipe_ingredient.save()
+        return recipe
+
+    def update(self, recipe, validated_data):
+        ingredients = validated_data.pop('ingredients')
+        tags = validated_data.pop('tags')
+
+        RecipeIngredient.objects.filter(recipe=recipe).delete()
+        for item in ingredients:
+            ingredient = Ingredient.objects.get(id=item.get('id'))
+            amount = item.get('amount')
+            recipe_ingredient = RecipeIngredient.objects.create(
+                ingredient=ingredient,
+                recipe=recipe,
+                amount=amount
+            )
+            recipe_ingredient.save()
+
+        recipe.cooking_time = validated_data.pop('cooking_time')
+        recipe.name = validated_data.pop('name')
+        recipe.text = validated_data.pop('text')
+        if validated_data.get('image') is not None:
+            recipe.image = validated_data.pop('image')
+        recipe.save()
+        recipe.tags.set(tags)
+        return recipe
+
+    def to_representation(self, instance):
+        return RecipeListSerializer(
+            instance,
+            context={
+                'request': self.context.get('request')
+            }
+        ).data
+
+
 class CustomUserSubscribeSerializer(CustomUserSerializer):
     recipes = serializers.SerializerMethodField()
     recipes_count = serializers.SerializerMethodField()
@@ -162,7 +194,6 @@ class CustomUserSubscribeSerializer(CustomUserSerializer):
         model = CustomUser
         fields = CustomUserSerializer.Meta.fields + ('recipes',
                                                      'recipes_count', )
-
     def get_recipes_count(self, author):
         return author.recipes.all().count()
 

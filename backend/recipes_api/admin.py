@@ -7,6 +7,7 @@ from .models import (
 
 class RecipeIngredientInline(admin.TabularInline):
     model = RecipeIngredient
+    fields = ('ingredient', 'amount')
 
 
 class TagAdmin(admin.ModelAdmin):
@@ -50,3 +51,4 @@ admin.site.register(Tag, TagAdmin)
 admin.site.register(Follow, FollowAdmin)
 admin.site.register(Favorite, FavoriteAdmin)
 admin.site.register(ShoppingCart, ShoppingCartAdmin)
+admin.site.register(RecipeIngredient)
