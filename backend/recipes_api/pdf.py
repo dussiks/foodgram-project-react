@@ -65,6 +65,7 @@ def create_pdffile_response(user_id: int) -> object:
     textobject = pdf.beginText()
     textobject.setTextOrigin(inch, inch)
     textobject.setFont('Verdana', 20)
+
     pdf_lines = []
     head_line = 'СПИСОК ИНГРЕДИЕНТОВ К ПОКУПКЕ:'
     pdf_lines.append(head_line)
@@ -82,5 +83,6 @@ def create_pdffile_response(user_id: int) -> object:
     pdf.showPage()
     pdf.save()
     buffer.seek(0)
+
     return FileResponse(buffer, as_attachment=True,
                         filename='buying_list.pdf')

@@ -1,6 +1,5 @@
 from django.db import models
 
-from django.core.exceptions import ObjectDoesNotExist
 from rest_framework import permissions, status, viewsets
 from rest_framework.decorators import action, api_view, permission_classes
 from rest_framework.generics import get_object_or_404
@@ -141,7 +140,7 @@ class SubscriptionViewSet(APIView):
         recipe_author = get_object_or_404(CustomUser, pk=pk)
         try:
             subscription = follower.followers.get(author=recipe_author)
-        except ObjectDoesNotExist:
+        except models.Follow.DoesNotExist:
             error_text = 'No subscription on given user found.'
             return Response(error_text,
                             status=status.HTTP_400_BAD_REQUEST)

@@ -1,7 +1,6 @@
 import base64
 import six
 import uuid
-# from drf_extra_fields.fields import Base64ImageField
 from django.core.files.base import ContentFile
 from rest_framework import serializers
 
@@ -32,7 +31,7 @@ class Base64ImageField(serializers.ImageField):
         import imghdr
 
         extension = imghdr.what(file_name, decoded_file)
-        extension = "jpg" if extension == "jpeg" else extension
+        extension = 'jpg' if extension == 'jpeg' else extension
         return extension
 
 
@@ -116,7 +115,7 @@ class IngredientWithAmountSerializer(serializers.Serializer):
 
         if data['amount'] <= 0:
             raise serializers.ValidationError(
-                f'Amount for id = {data["id"]} should be grater than 0.'
+                f'Amount for id = {data["id"]} should be bigger than 0.'
             )
         return data
 
@@ -194,6 +193,7 @@ class CustomUserSubscribeSerializer(CustomUserSerializer):
         model = CustomUser
         fields = CustomUserSerializer.Meta.fields + ('recipes',
                                                      'recipes_count', )
+
     def get_recipes_count(self, author):
         return author.recipes.all().count()
 
