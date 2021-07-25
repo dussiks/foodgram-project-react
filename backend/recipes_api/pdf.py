@@ -42,7 +42,7 @@ def get_shop_ingredients_or_none(user_id: int) -> dict:
                 }
             else:
                 shop_ingredients[name]['amount'] = (
-                        shop_ingredients[name]['amount'] + amount
+                    shop_ingredients[name]['amount'] + amount
                 )
     return shop_ingredients
 
