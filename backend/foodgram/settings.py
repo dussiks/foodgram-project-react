@@ -16,7 +16,7 @@ DEBUG = env('DEBUG', default=False)
 ALLOWED_HOSTS = [
     'localhost',
     '127.0.0.1',
-    'web',
+    'backend',
     '0.0.0.0',
 ]
 
@@ -74,8 +74,6 @@ DATABASES = {
         'PASSWORD': env('POSTGRES_PASSWORD', default='postgres'),
         'HOST': env('POSTGRES_HOST', default='postgresql'),
         'PORT': env('DB_PORT', default=5432),
-        # 'ENGINE': 'django.db.backends.sqlite3',
-        # 'NAME': os.path.join(BASE_DIR, 'db.sqlite3'),
     }
 }
 

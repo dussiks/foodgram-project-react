@@ -64,7 +64,7 @@ class FavoriteViewSet(APIView):
         recipe = get_object_or_404(Recipe, pk=pk)
 
         if recipe.favorites.filter(user=current_user).exists():
-            error_text = "Recipe already in user's favorites."
+            error_text = "Recipe is already in user's favorites."
             return Response(error_text, status=status.HTTP_400_BAD_REQUEST)
         Favorite.objects.create(user=current_user, recipe=recipe)
         serializer = FavoriteAndShoppingRecipeSerializer(recipe)
@@ -90,7 +90,7 @@ class ShoppingCartViewSet(APIView):
         recipe = get_object_or_404(Recipe, pk=pk)
 
         if recipe.shopping_carts.filter(user=current_user).exists():
-            error_text = 'Recipe already in shopping cart.'
+            error_text = 'Recipe is already in shopping cart.'
             return Response(error_text, status=status.HTTP_400_BAD_REQUEST)
         ShoppingCart.objects.create(user=current_user, recipe=recipe)
         serializer = FavoriteAndShoppingRecipeSerializer(recipe)
