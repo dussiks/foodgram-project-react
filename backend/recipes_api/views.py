@@ -10,7 +10,8 @@ from .models import (CustomUser, Favorite, Follow, Ingredient, Recipe,
                      ShoppingCart, Tag)
 from .paginator import CustomPagination
 from .pdf import create_pdffile_response
-from .permissions import IsAdminOrReadOnly, IsAuthorOrAdmin
+from .permissions import (IsAdminOrReadOnly, IsAuthorOrAdminOrDenied,
+                          IsAuthorOrAdminOrReadOnly)
 from .serializers import (CustomUserSubscribeSerializer,
                           FavoriteAndShoppingRecipeSerializer,
                           IngredientSerializer, RecipeCreateUpdateSerializer,
@@ -35,20 +36,14 @@ class IngredientViewSet(viewsets.ModelViewSet):
 class RecipeViewSet(viewsets.ModelViewSet):
     queryset = Recipe.objects.all()
     filter_class = RecipeFilter
-
-    def get_permissions(self):
-        if self.action == 'create':
-            return permissions.IsAuthenticated(),
-        if self.action in ['destroy', 'partial_update', 'update']:
-            return IsAuthorOrAdmin(),
-        return permissions.AllowAny(),
+    permission_classes = (IsAuthorOrAdminOrReadOnly, )
 
     def get_serializer_class(self):
         if self.action in ['list', 'retrieve']:
             return RecipeListSerializer
         return RecipeCreateUpdateSerializer
 
-    @action(detail=False, permission_classes=(IsAuthorOrAdmin, ))
+    @action(detail=False, permission_classes=(IsAuthorOrAdminOrDenied, ))
     def download_shopping_cart(self, request):
         current_user = request.user
         return create_pdffile_response(user_id=current_user.id)

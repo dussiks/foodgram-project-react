@@ -1,7 +1,14 @@
 from rest_framework import permissions
 
 
-class IsCurrentUserOrAdmin(permissions.BasePermission):
+class IsOwnerOrAuthenticatedOrCreateOnly(permissions.BasePermission):
+
+    def has_permission(self, request, view):
+        if request.method == 'POST':
+            return True
+        return not request.user.is_anonymous
 
     def has_object_permission(self, request, view, obj):
-        return request.user == obj or request.user.is_admin
+        if request.method in ['PUT', 'PATCH', 'DELETE']:
+            return request.user == obj or request.user.is_admin
+        return True

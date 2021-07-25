@@ -7,10 +7,10 @@ from .managers import UserAccountManager
 class CustomUser(AbstractUser):
     email = models.EmailField('email', unique=True, max_length=254)
     username = models.CharField(
-        'логин', max_length=150, blank=False, unique=True
+        'логин', max_length=150, unique=True
     )
-    first_name = models.CharField('имя', max_length=150, blank=False)
-    last_name = models.CharField('фамилия', max_length=150, blank=False)
+    first_name = models.CharField('имя', max_length=150)
+    last_name = models.CharField('фамилия', max_length=150)
     is_staff = models.BooleanField(default=False)
     is_active = models.BooleanField(default=True)
     USERNAME_FIELD = 'email'

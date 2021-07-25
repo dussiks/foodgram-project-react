@@ -1,41 +1,11 @@
-from django.core.files.base import ContentFile
 from rest_framework import serializers
+from rest_framework.generics import get_object_or_404
 
 from users.serializers import CustomUserSerializer
 
+from .fields import Base64ImageField
 from .models import (CustomUser, Favorite, Ingredient, Recipe,
                      RecipeIngredient, ShoppingCart, Tag)
-
-
-class Base64ImageField(serializers.ImageField):
-
-    def to_internal_value(self, data):
-
-        import base64
-        import uuid
-
-        import six
-
-        if isinstance(data, six.string_types):
-            if 'data:' in data and ';base64,' in data:
-                header, data = data.split(';base64,')
-
-            try:
-                decoded_file = base64.b64decode(data)
-            except TypeError:
-                self.fail('invalid_image')
-
-            file_name = str(uuid.uuid4())[:20]
-            file_extension = self.get_file_extension(file_name, decoded_file)
-            complete_file_name = "%s.%s" % (file_name, file_extension, )
-            data = ContentFile(decoded_file, name=complete_file_name)
-        return super(Base64ImageField, self).to_internal_value(data)
-
-    def get_file_extension(self, file_name, decoded_file):
-        import imghdr
-        extension = imghdr.what(file_name, decoded_file)
-        return 'jpg' if extension == 'jpeg' else imghdr.what(file_name,
-                                                             decoded_file)
 
 
 class TagSerializer(serializers.ModelSerializer):
@@ -145,7 +115,7 @@ class RecipeCreateUpdateSerializer(serializers.ModelSerializer):
         recipe.tags.set(tags)
 
         for item in ingredients:
-            ingredient = Ingredient.objects.get(id=item.get('id'))
+            ingredient = get_object_or_404(Ingredient, id=item.get('id'))
             amount = item.get('amount')
             recipe_ingredient = RecipeIngredient.objects.create(
                 ingredient=ingredient,
@@ -161,7 +131,7 @@ class RecipeCreateUpdateSerializer(serializers.ModelSerializer):
 
         RecipeIngredient.objects.filter(recipe=recipe).delete()
         for item in ingredients:
-            ingredient = Ingredient.objects.get(id=item.get('id'))
+            ingredient = get_object_or_404(Ingredient, id=item.get('id'))
             amount = item.get('amount')
             recipe_ingredient = RecipeIngredient.objects.create(
                 ingredient=ingredient,

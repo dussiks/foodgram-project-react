@@ -5,7 +5,7 @@ from users.models import CustomUser
 
 
 class Tag(models.Model):
-    name = models.CharField('тег', max_length=200, unique=True, blank=False)
+    name = models.CharField('тег', max_length=200, unique=True)
     slug = models.SlugField(max_length=200, unique=True)
     color = models.CharField(
         'цвет',
@@ -18,6 +18,7 @@ class Tag(models.Model):
     )
 
     class Meta:
+        verbose_name = 'тег'
         verbose_name_plural = 'теги'
         ordering = ('name',)
 
@@ -26,10 +27,11 @@ class Tag(models.Model):
 
 
 class Ingredient(models.Model):
-    name = models.CharField('ингредиент', max_length=200, blank=False)
-    measurement_unit = models.CharField('ЕИ', max_length=200, blank=False)
+    name = models.CharField('ингредиент', max_length=200, db_index=True)
+    measurement_unit = models.CharField('ЕИ', max_length=200)
 
     class Meta:
+        verbose_name = 'ингредиент'
         verbose_name_plural = 'ингредиенты'
         ordering = ('name',)
         constraints = [
@@ -45,21 +47,19 @@ class Ingredient(models.Model):
 
 class Recipe(models.Model):
     author = models.ForeignKey(CustomUser, on_delete=models.CASCADE,
-                               null=False, blank=False, verbose_name='автор',
+                               null=False, verbose_name='автор',
                                related_name='recipes')
-    name = models.CharField('рецепт', max_length=40,
-                            blank=False, db_index=True)
-    image = models.ImageField('рисунок', upload_to='recipes_api/',
-                              null=False, blank=False)
-    text = models.TextField('описание', blank=False)
-    cooking_time = models.PositiveSmallIntegerField('время готовки, мин',
-                                                    blank=False)
-    tags = models.ManyToManyField(Tag, related_name='tags',
+    name = models.CharField('рецепт', max_length=40, db_index=True)
+    image = models.ImageField('рисунок', upload_to='recipes_api/', null=False)
+    text = models.TextField('описание')
+    cooking_time = models.PositiveSmallIntegerField('время готовки, мин')
+    tags = models.ManyToManyField(Tag, related_name='recipes',
                                   verbose_name='теги')
     ingredients = models.ManyToManyField(Ingredient,
                                          through='RecipeIngredient')
 
     class Meta:
+        verbose_name = 'рецепт'
         verbose_name_plural = 'рецепты'
         ordering = ('-id',)
 
@@ -74,12 +74,16 @@ class Recipe(models.Model):
 class RecipeIngredient(models.Model):
     recipe = models.ForeignKey(Recipe, on_delete=models.CASCADE,
                                related_name='recipe_ingredients',
-                               blank=False, verbose_name='рецепт')
+                               verbose_name='рецепт')
     ingredient = models.ForeignKey(Ingredient, on_delete=models.CASCADE,
-                                   blank=False, verbose_name='ингредиент')
+                                   verbose_name='ингредиент')
     amount = models.PositiveSmallIntegerField(
-        'количество', blank=False, validators=[MinValueValidator(1)]
+        'количество', validators=[MinValueValidator(1)]
     )
+
+    class Meta:
+        verbose_name = 'Количество ингредиента в рецепте'
+        ordering = ('-id',)
 
 
 class Follow(models.Model):

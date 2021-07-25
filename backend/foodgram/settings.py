@@ -1,8 +1,6 @@
-# flake8: noqa
 import os
 
 import environ
-
 
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
@@ -14,7 +12,6 @@ SECRET_KEY = env('DJANGO_SECRET_KEY', default='jvrmme)4qswfa)m45=@a=l9k(vzxzyxzp
 DEBUG = env('DEBUG', default=False)
 
 ALLOWED_HOSTS = [
-    'localhost',
     '127.0.0.1',
     'backend',
     '0.0.0.0',
@@ -33,7 +30,6 @@ INSTALLED_APPS = [
     'rest_framework.authtoken',
     'django_filters',
     'djoser',
-    'drf_extra_fields',
 ]
 
 MIDDLEWARE = [
