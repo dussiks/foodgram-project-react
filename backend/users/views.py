@@ -2,8 +2,8 @@ from djoser.views import UserViewSet
 from rest_framework import permissions
 
 from .models import CustomUser
-from .serializers import CustomUserSerializer
 from .permissions import IsCurrentUserOrAdmin
+from .serializers import CustomUserSerializer
 
 
 class CustomUserModelViewSet(UserViewSet):

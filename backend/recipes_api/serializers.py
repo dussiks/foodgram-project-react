@@ -1,17 +1,21 @@
-import base64
-import six
-import uuid
 from django.core.files.base import ContentFile
 from rest_framework import serializers
 
+from users.serializers import CustomUserSerializer
+
 from .models import (CustomUser, Favorite, Ingredient, Recipe,
                      RecipeIngredient, ShoppingCart, Tag)
-from users.serializers import CustomUserSerializer
 
 
 class Base64ImageField(serializers.ImageField):
 
     def to_internal_value(self, data):
+
+        import base64
+        import uuid
+
+        import six
+
         if isinstance(data, six.string_types):
             if 'data:' in data and ';base64,' in data:
                 header, data = data.split(';base64,')
@@ -29,10 +33,9 @@ class Base64ImageField(serializers.ImageField):
 
     def get_file_extension(self, file_name, decoded_file):
         import imghdr
-
         extension = imghdr.what(file_name, decoded_file)
-        extension = 'jpg' if extension == 'jpeg' else extension
-        return extension
+        return 'jpg' if extension == 'jpeg' else imghdr.what(file_name,
+                                                             decoded_file)
 
 
 class TagSerializer(serializers.ModelSerializer):

@@ -1,12 +1,9 @@
+import models
 from django.contrib import admin
-
-from .models import (
-    Favorite, Follow, Ingredient, Recipe, ShoppingCart, Tag, RecipeIngredient
-)
 
 
 class RecipeIngredientInline(admin.TabularInline):
-    model = RecipeIngredient
+    model = models.RecipeIngredient
     fields = ('ingredient', 'amount')
 
 
@@ -45,10 +42,10 @@ class ShoppingCartAdmin(admin.ModelAdmin):
     empty_value_display = '-пусто-'
 
 
-admin.site.register(Ingredient, IngredientAdmin)
-admin.site.register(Recipe, RecipeAdmin)
-admin.site.register(Tag, TagAdmin)
-admin.site.register(Follow, FollowAdmin)
-admin.site.register(Favorite, FavoriteAdmin)
-admin.site.register(ShoppingCart, ShoppingCartAdmin)
-admin.site.register(RecipeIngredient)
+admin.site.register(models.Ingredient, IngredientAdmin)
+admin.site.register(models.Recipe, RecipeAdmin)
+admin.site.register(models.Tag, TagAdmin)
+admin.site.register(models.Follow, FollowAdmin)
+admin.site.register(models.Favorite, FavoriteAdmin)
+admin.site.register(models.ShoppingCart, ShoppingCartAdmin)
+admin.site.register(models.RecipeIngredient)

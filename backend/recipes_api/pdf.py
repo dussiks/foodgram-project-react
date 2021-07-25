@@ -23,7 +23,7 @@ def get_shop_ingredients_or_none(user_id: int) -> dict:
     user = CustomUser.objects.get(id=user_id)
     shopping_cart = user.shopping_carts.select_related('recipe').all()
     if not shopping_cart:
-        return
+        return None
 
     shop_ingredients = {}
     for item in shopping_cart:

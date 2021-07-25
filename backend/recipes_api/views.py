@@ -1,5 +1,4 @@
 from django.db import models
-
 from rest_framework import permissions, status, viewsets
 from rest_framework.decorators import action, api_view, permission_classes
 from rest_framework.generics import get_object_or_404
@@ -7,11 +6,11 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 
 from .filters import RecipeFilter
-from .models import (CustomUser, Favorite, Follow,
-                     Ingredient, Recipe, ShoppingCart, Tag)
+from .models import (CustomUser, Favorite, Follow, Ingredient, Recipe,
+                     ShoppingCart, Tag)
 from .paginator import CustomPagination
 from .pdf import create_pdffile_response
-from .permissions import IsAuthorOrAdmin, IsAdminOrReadOnly
+from .permissions import IsAdminOrReadOnly, IsAuthorOrAdmin
 from .serializers import (CustomUserSubscribeSerializer,
                           FavoriteAndShoppingRecipeSerializer,
                           IngredientSerializer, RecipeCreateUpdateSerializer,
@@ -52,8 +51,7 @@ class RecipeViewSet(viewsets.ModelViewSet):
     @action(detail=False, permission_classes=(IsAuthorOrAdmin, ))
     def download_shopping_cart(self, request):
         current_user = request.user
-        response = create_pdffile_response(user_id=current_user.id)
-        return response
+        return create_pdffile_response(user_id=current_user.id)
 
 
 class FavoriteViewSet(APIView):

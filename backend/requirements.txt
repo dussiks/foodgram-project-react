@@ -15,12 +15,19 @@ djangorestframework==3.12.4
 djangorestframework-simplejwt==4.7.2
 djoser==2.1.0
 flake8==3.9.2
+flake8-broken-line==0.3.0
+flake8-isort==4.0.0
+flake8-plugin-utils==1.3.2
+flake8-polyfill==1.0.2
+flake8-return==1.1.3
 idna==2.10
+isort==5.9.2
 itypes==1.2.0
 Jinja2==3.0.1
 MarkupSafe==2.0.1
 mccabe==0.6.1
 oauthlib==3.1.1
+pep8-naming==0.12.0
 Pillow==8.3.1
 psycopg2==2.8.6
 pycodestyle==2.7.0
@@ -36,5 +43,6 @@ six==1.16.0
 social-auth-app-django==4.0.0
 social-auth-core==4.1.0
 sqlparse==0.4.1
+testfixtures==6.18.0
 uritemplate==3.0.1
 urllib3==1.26.6
