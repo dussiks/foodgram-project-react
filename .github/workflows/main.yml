@@ -5,7 +5,9 @@ on: [push]
 jobs:
   tests:
     runs-on: ubuntu-latest
-
+    defaults:
+      run:
+        working-directory: ./backend
     steps:
     - uses: actions/checkout@v2
     - name: Set up Python 
@@ -19,7 +21,7 @@ jobs:
         pip install -r requirements.txt
     - name: Test with flake8
       run: |
-        python -m flake8 foodgram/ recipes_api/ users/
+        python -m flake8
   
   build_and_push_to_docker_hub:
     name: Push Docker image to Docker Hub
