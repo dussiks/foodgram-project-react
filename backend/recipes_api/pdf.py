@@ -1,5 +1,6 @@
 import io
 
+from django.core.exceptions import MultipleObjectsReturned
 from django.db import models
 from django.http import FileResponse
 from reportlab.lib.pagesizes import letter
@@ -23,7 +24,7 @@ def get_shop_ingredients_or_none(user_id: int) -> dict:
     """
     try:  # поскольку вызывающая функция ждем либо словарь, либо None, я решил обработать возможное исключение.
         user = CustomUser.objects.get(id=user_id)
-    except models.CustomUser.DoesNotExist:
+    except (models.CustomUser.DoesNotExist, MultipleObjectsReturned):
         return None
 
     shopping_cart = user.shopping_carts.select_related('recipe').all()
