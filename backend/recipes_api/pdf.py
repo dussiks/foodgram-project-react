@@ -22,7 +22,7 @@ def get_shop_ingredients_or_none(user_id: int) -> dict:
     :param user_id - id of the user owner of shopping_cart.
     :return: data about all ingredients in shopping_cart.
     """
-    try:  # поскольку вызывающая функция ждем либо словарь, либо None, я решил обработать возможное исключение.
+    try:
         user = CustomUser.objects.get(id=user_id)
     except (models.CustomUser.DoesNotExist, MultipleObjectsReturned):
         return None
