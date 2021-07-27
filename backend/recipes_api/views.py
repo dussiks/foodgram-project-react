@@ -28,14 +28,14 @@ class TagViewSet(viewsets.ModelViewSet):
 class IngredientViewSet(viewsets.ModelViewSet):
     serializer_class = IngredientSerializer
     queryset = Ingredient.objects.all()
-    filter_class = IngredientFilter
+    filterset_class = IngredientFilter
     pagination_class = None
-    permission_classes = (IsAdminOrReadOnly, )
+    permission_classes = (IsAdminOrReadOnly,)
 
 
 class RecipeViewSet(viewsets.ModelViewSet):
     queryset = Recipe.objects.all()
-    filter_class = RecipeFilter
+    filterset_class = RecipeFilter
     permission_classes = (IsAuthorOrAdminOrReadOnly, )
 
     def get_serializer_class(self):

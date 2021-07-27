@@ -12,6 +12,7 @@ SECRET_KEY = env('DJANGO_SECRET_KEY', default='jvrmme)4qswfa)m45=@a=l9k(vzxzyxzp
 DEBUG = env('DEBUG', default=False)
 
 ALLOWED_HOSTS = [
+    '127.0.0.1',
     '178.154.197.202',
     'backend',
     'localhost',
@@ -64,8 +65,8 @@ WSGI_APPLICATION = 'foodgram.wsgi.application'
 
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.postgresql',
-        'NAME': env('POSTGRES_DB', default='postgres'),
+        'ENGINE': 'django.db.backends.sqlite3',
+        'NAME': os.path.join(BASE_DIR, 'db.sqlite3'),
         'USER': env('POSTGRES_USER', default='postgres'),
         'PASSWORD': env('POSTGRES_PASSWORD', default='postgres'),
         'HOST': env('POSTGRES_HOST', default='db'),
