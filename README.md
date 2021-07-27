@@ -1,12 +1,10 @@
-[![foodgram workflow](https://github.com/dussiks/foodgram-project-react/actions/workflows/foodgram_workflow.yaml/badge.svg?branch=master&event=push)](https://github.com/dussiks/foodgram-project-react/actions/workflows/foodgram_workflow.yaml)
+![foodgram workflow](https://github.com/dussiks/foodgram-project-react/actions/workflows/foodgram.yml/badge.svg)
 
 # foodgram
 
-Foodgram API application that allows operating with Reviews for Titles by making http calls. App provides authorization and authentification services.
+Foodgram API application that allows to operating with Recipes by making http calls. App provides authorization and authentification services.
 
 Application is located in specified [host](http://178.154.197.202/). You can config settings in [admin](http://178.154.197.202/admin/).
-
-Application released with tags v.*
 
 ## Installation
 
@@ -42,11 +40,10 @@ Need to adjust db and static and after application started
 ### Django settings
 ```bash
 docker-compose exec backend python manage.py migrate --noinput
-docker-compose exec backend python manage.py loaddata fixtures.json
 docker-compose exec backend python manage.py createsuperuser
 docker-compose exec backend python manage.py collectstatic --no-input 
 ```
-Application settings pointed in 'api_yamdb/settings'
+Application settings pointed in 'backend/foodgram/settings'
 
 
 ### Detailed documentation for API you could see via url: ```/api/docs/```
