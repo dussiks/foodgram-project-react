@@ -68,7 +68,7 @@ DATABASES = {
         'NAME': env('POSTGRES_DB', default='postgres'),
         'USER': env('POSTGRES_USER', default='postgres'),
         'PASSWORD': env('POSTGRES_PASSWORD', default='postgres'),
-        'HOST': env('POSTGRES_HOST', default='postgresql'),
+        'HOST': env('POSTGRES_HOST', default='db'),
         'PORT': env('DB_PORT', default=5432),
     }
 }
@@ -117,14 +117,6 @@ REST_FRAMEWORK = {
         'django_filters.rest_framework.DjangoFilterBackend',
         'rest_framework.filters.SearchFilter',
     ],
-    'DEFAULT_THROTTLE_CLASSES': [
-        'rest_framework.throttling.UserRateThrottle',
-        'rest_framework.throttling.AnonRateThrottle',
-    ],
-    'DEFAULT_THROTTLE_RATES': {
-        'user': '1000/day',
-        'anon': '100/day',
-    },
     'DEFAULT_PAGINATION_CLASS': 'recipes_api.paginator.CustomPagination',
 }
 
