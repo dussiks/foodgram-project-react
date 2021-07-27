@@ -48,12 +48,6 @@ class RecipeViewSet(viewsets.ModelViewSet):
         current_user = request.user
         return create_pdffile_response(user_id=current_user.id)
 
-    def get_queryset(self):
-        tags = self.request.query_params.get('tags')
-        if tags is not None:
-            return Recipe.objects.all()
-        return Recipe.objects.none()
-
 
 class FavoriteViewSet(APIView):
     permission_classes = (permissions.IsAuthenticated,)
