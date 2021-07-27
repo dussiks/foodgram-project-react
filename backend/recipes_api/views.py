@@ -5,7 +5,7 @@ from rest_framework.generics import get_object_or_404
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
-from .filters import RecipeFilter
+from .filters import IngredientFilter, RecipeFilter
 from .models import (CustomUser, Favorite, Follow, Ingredient, Recipe,
                      ShoppingCart, Tag)
 from .paginator import CustomPagination
@@ -28,7 +28,7 @@ class TagViewSet(viewsets.ModelViewSet):
 class IngredientViewSet(viewsets.ModelViewSet):
     serializer_class = IngredientSerializer
     queryset = Ingredient.objects.all()
-    search_fields = ['name', ]
+    filter_class = IngredientFilter
     pagination_class = None
     permission_classes = (IsAdminOrReadOnly, )
 
