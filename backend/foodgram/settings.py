@@ -12,9 +12,9 @@ SECRET_KEY = env('DJANGO_SECRET_KEY', default='jvrmme)4qswfa)m45=@a=l9k(vzxzyxzp
 DEBUG = env('DEBUG', default=False)
 
 ALLOWED_HOSTS = [
-    '127.0.0.1',
+    '178.154.197.202',
     'backend',
-    '0.0.0.0',
+    'localhost',
 ]
 
 INSTALLED_APPS = [
