@@ -37,7 +37,8 @@ class RecipeFilter(filters.FilterSet):
             tags_list = self.request.query_params.getlist('tags')
         except AttributeError:
             return Response(status=status.HTTP_400_BAD_REQUEST)
-        tags = Tag.objects.filter(slug__in=tags_list).values_list('id', flat=True)
+        tags = Tag.objects.filter(slug__in=tags_list).values_list('id',
+                                                                  flat=True)
         if tags is not None:
             return queryset.filter(tags__id__in=tags).distinct()
         return queryset
