@@ -52,7 +52,13 @@ class Recipe(models.Model):
     name = models.CharField('рецепт', max_length=40, db_index=True)
     image = models.ImageField('рисунок', upload_to='recipes_api/', null=False)
     text = models.TextField('описание')
-    cooking_time = models.PositiveSmallIntegerField('время готовки, мин')
+    cooking_time = models.IntegerField(
+        verbose_name='время готовки, мин',
+        validators=[MinValueValidator(
+            1,
+            message='Введите целое число больше 0 для времени готовки.'
+        )],
+    )
     tags = models.ManyToManyField(Tag, related_name='recipes',
                                   verbose_name='теги')
     ingredients = models.ManyToManyField(Ingredient,
@@ -78,8 +84,12 @@ class RecipeIngredient(models.Model):
                                verbose_name='рецепт')
     ingredient = models.ForeignKey(Ingredient, on_delete=models.CASCADE,
                                    verbose_name='ингредиент')
-    amount = models.PositiveSmallIntegerField(
-        'количество', validators=[MinValueValidator(1)]
+    amount = models.IntegerField(
+        verbose_name='количество',
+        validators=[MinValueValidator(
+            1,
+            message='Введите целое число больше 0 для количества.'
+        )],
     )
 
     class Meta:

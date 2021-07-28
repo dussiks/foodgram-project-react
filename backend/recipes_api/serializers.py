@@ -75,22 +75,7 @@ class RecipeListSerializer(serializers.ModelSerializer):
 
 class IngredientWithAmountSerializer(serializers.Serializer):
     id = serializers.IntegerField()
-    amount = serializers.IntegerField()
-
-    def validate(self, data):
-        if not Ingredient.objects.filter(id=data['id']).exists():
-            raise serializers.ValidationError('No ingredient with such id.')
-
-        if not isinstance(data['amount'], int):
-            raise serializers.ValidationError(
-                f'Amount for id = {data["id"]} should be integer.'
-            )
-
-        if data['amount'] <= 0:
-            raise serializers.ValidationError(
-                f'Amount for id = {data["id"]} should be bigger than 0.'
-            )
-        return data
+    amount = serializers.CharField()
 
 
 class RecipeCreateUpdateSerializer(serializers.ModelSerializer):
@@ -99,11 +84,37 @@ class RecipeCreateUpdateSerializer(serializers.ModelSerializer):
         queryset=Tag.objects.all(), many=True
     )
     image = Base64ImageField()
+    cooking_time = serializers.IntegerField(
+        error_messages={
+            'invalid': 'Время готовки должно быть в формате целого числа'
+        }
+    )
 
     class Meta:
         model = Recipe
         fields = ('ingredients', 'tags', 'image',
                   'name', 'text', 'cooking_time')
+
+    def validate_cooking_time(self, data):
+        if data <= 0:
+            raise serializers.ValidationError(
+                'Введите целое число больше 0 для времени готовки'
+            )
+
+        return data
+
+    def validate_ingredients(self, data):
+        for item in data:
+            amount = item.get('amount')
+            if not amount.isdigit():
+                raise serializers.ValidationError(
+                    'Количество ингредиента введите в виде целого числа > 0.'
+                )
+            if int(amount[0]) == 0:
+                raise serializers.ValidationError(
+                    'Количество должно начинаться с положительной цифры.'
+                )
+        return data
 
     def create(self, validated_data):
         request = self.context.get('request')
