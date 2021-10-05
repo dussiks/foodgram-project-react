@@ -1,10 +1,9 @@
 ![foodgram workflow](https://github.com/dussiks/foodgram-project-react/actions/workflows/foodgram.yml/badge.svg)
-Admin email: py@py.py  Admin password: prom727A 
+
 # foodgram
 
 Foodgram API application that allows to operating with Recipes by making http calls. App provides authorization and authentification services.
 
-Application is located in specified [host](http://178.154.197.202/). You can config settings in [admin](http://178.154.197.202/admin/).
 
 ## Installation
 
